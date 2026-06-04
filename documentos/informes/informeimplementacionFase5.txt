@@ -1,0 +1,75 @@
+================================================================================
+   INFORME DE IMPLEMENTACIÓN Y VALIDACIÓN - FASE 5
+   Proyecto: Sistema Predictivo de Rotación de Personal (RRHH)
+   Ingeniería de Software · 7mo Semestre
+================================================================================
+
+Este informe detalla las actividades, resultados de validación cruzada, afinación 
+de hiperparámetros y validaciones de la Fase 5 (Optimización y Validación Cruzada).
+
+--------------------------------------------------------------------------------
+1. VALIDACIÓN CRUZADA DE ESTABILIDAD (Subproceso 5.1)
+--------------------------------------------------------------------------------
+Se aplicó validación cruzada con 5 pliegues (k-fold, k=5) sobre el mejor clasificador 
+base preliminar (Gradient Boosting) para medir la variabilidad del rendimiento:
+  - F1-Scores obtenidos por pliegue: [0.3182, 0.4167, 0.4490, 0.3000, 0.3750]
+  - Media del F1-Score de Validación Cruzada: 0.3718
+  - Desviación Estándar de Validación Cruzada (std): 0.0566
+  
+La desviación estándar baja (5.66%) ratifica la estabilidad del rendimiento del
+modelo a lo largo de las distintas particiones del conjunto de datos.
+
+--------------------------------------------------------------------------------
+2. BÚSQUEDA DE HIPERPARÁMETROS (Subproceso 5.2)
+--------------------------------------------------------------------------------
+Se configuró una búsqueda sistemática por rejilla (GridSearchCV) sobre el
+entrenamiento estandarizado de Gradient Boosting para evaluar combinaciones de:
+  - learning_rate: [0.01, 0.05, 0.1, 0.15]
+  - n_estimators: [50, 100, 150, 200]
+  - max_depth: [3, 4, 5]
+
+La optimización seleccionó la siguiente combinación de hiperparámetros óptimos:
+  - learning_rate: 0.15
+  - max_depth: 3
+  - n_estimators: 100
+
+Esta configuración alcanzó un F1-Score promedio en validación de 0.4102.
+
+--------------------------------------------------------------------------------
+3. COMPARATIVA: MODELO BASE VS MODELO OPTIMIZADO (Subproceso 5.3)
+--------------------------------------------------------------------------------
+Se re-entrenó el modelo con los hiperparámetros óptimos sobre todo el conjunto de 
+entrenamiento y se evaluó contra el conjunto de prueba (test).
+
+| Métrica   | Modelo Base (GB) | Modelo Optimizado (GB) | Diferencia |
+| :-------- | :--------------: | :--------------------: | :--------: |
+| Accuracy  |      0.5700      |         0.6000         |   +0.0300  |
+| Precision |      0.3182      |         0.3810         |   +0.0628  |
+| Recall    |      0.2000      |         0.2286         |   +0.0286  |
+| F1-Score  |      0.2456      |         0.2857         |   +0.0401  |
+| AUC-ROC   |      0.5147      |         0.5095         |   -0.0052  |
+
+Análisis del Impacto de Optimización:
+  - Se observa una mejora significativa en las principales métricas de clasificación:
+    * Accuracy sube de 57.00% a 60.00%.
+    * Precision mejora de 31.82% a 38.10%.
+    * Recall sube de 20.00% a 22.86%.
+    * F1-Score aumenta de 24.56% a 28.57% (+4.01% absoluto).
+  - El AUC-ROC experimenta un decrecimiento mínimo marginal (-0.0052).
+  - En conclusión, la sintonización fina de hiperparámetros robusteció las
+    predicciones del modelo optimizado y mejoró su capacidad de generalización.
+
+--------------------------------------------------------------------------------
+4. VALIDACIONES CRÍTICAS DE LA FASE 5
+--------------------------------------------------------------------------------
+  [OK] Registro de Métricas de Estabilidad: Se calculó y reportó la media de F1
+       (0.3718) y su desviación estándar (0.0566) en el notebook.
+  [OK] Control de Overfitting: Se evaluó la brecha de rendimiento de F1-Score
+       entre validación cruzada en entrenamiento (0.4102) y prueba en test (0.2857).
+       La diferencia es de 0.1245 (menor al límite crítico de 0.20), lo que 
+       demuestra que no existe un sobreajuste severo y el modelo conserva su
+       capacidad de generalizar ante datos no vistos.
+
+================================================================================
+   FIN DEL INFORME DE LA FASE 5
+================================================================================

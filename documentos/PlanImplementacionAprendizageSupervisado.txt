@@ -1,0 +1,234 @@
+================================================================================
+  PLAN DE IMPLEMENTACIÓN DE APRENDIZAJE SUPERVISADO
+  Proyecto: Sistema Predictivo de Rotación de Personal (RRHH)
+  Ingeniería de Software · 7mo Semestre
+  Documento de Planificación Técnica y Operativa
+================================================================================
+
+1. ENFOQUE TÉCNICO Y TECNOLOGÍAS
+────────────────────────────────────────────────────────────────────────────────
+El proyecto se abordará desde una perspectiva de Ingeniería de Software aplicada a 
+la Analítica de Personas (People Analytics). El objetivo principal es construir una 
+solución de aprendizaje supervisado extremo a extremo (end-to-end) que permita 
+predecir el riesgo de renuncia voluntaria de empleados dentro de un horizonte de 
+6 meses.
+
+Librerías y Tecnologías Clave:
+  • Lenguaje de Programación: Python 3.10+
+  • Manipulación de Datos: Pandas y NumPy (generación lógica, limpieza y transformación)
+  • Visualización y EDA: Matplotlib y Seaborn (análisis exploratorio, boxplots, ROC, matrices)
+  • Modelado Predictivo: Scikit-learn (Logistic Regression, Random Forest, StandardScaler, 
+    KFold, GridSearchCV)
+  • Algoritmo Avanzado: XGBoost (eXtreme Gradient Boosting) o sklearn GradientBoostingClassifier
+  • Entorno de Trabajo: Jupyter Notebook (.ipynb) o Google Colab para experimentación interactiva
+  • Control de Versiones: Git & GitHub para almacenamiento del código y trazabilidad
+
+2. PREPARACIÓN DEL ENTORNO DE DESARROLLO
+────────────────────────────────────────────────────────────────────────────────
+Antes de iniciar la codificación, se establecerá un entorno limpio y aislado para 
+evitar conflictos de dependencias.
+
+Pasos para la configuración:
+  1. Inicialización del repositorio Git:
+     git init
+  2. Creación del entorno virtual (Virtual Environment):
+     python -m venv venv
+  3. Activación del entorno virtual:
+     • Windows (PowerShell): .\venv\Scripts\Activate.ps1
+  4. Instalación de dependencias del proyecto:
+     pip install numpy pandas matplotlib seaborn scikit-learn xgboost jupyter
+  5. Generación del archivo de dependencias:
+     pip freeze > requirements.txt
+  6. Creación del notebook de desarrollo:
+     Crear 'Supervised_Learning_HR.ipynb' en la raíz del proyecto.
+
+3. FASES Y SUBPROCESOS DEL PLAN DE TRABAJO
+────────────────────────────────────────────────────────────────────────────────
+
+FASE 1: DISEÑO Y CREACIÓN DEL DATASET SINTÉTICO COHERENTE
+================================================================================
+Objetivo: Generar un archivo CSV con un mínimo de 300 registros simulados que
+representen la realidad operativa y económica de una empresa en Ecuador (2026).
+
+Subprocesos:
+  • Subproceso 1.1: Definición de Variables y Rangos Limítrofes
+    Establecer los tipos de datos y restricciones de entrada:
+    - edad: 22 a 60 años (entero)
+    - años_en_empresa: 0 a 20 (entero, menor o igual a edad - 18)
+    - salario_mensual: coherente con el cargo
+    - horas_extra_semana: 0 a 20 (entero)
+    - satisfaccion_laboral: 1 a 5 (entero discreto)
+    - num_proyectos_año: 1 a 10 (entero)
+    - distancia_casa_trabajo_km: 1 a 80 (entero)
+    - ultima_evaluacion_desempeño: 0.0 a 1.0 (flotante)
+    - capacitaciones_recibidas: 0 a 5 por año (entero)
+    - tiene_ascenso_ultimos_2_años: 0 o 1 (booleano/entero)
+  
+  • Subproceso 1.2: Implementación de la Lógica de Negocio (Reglas de Coherencia)
+    Programar un generador de probabilidad de renuncia individual basado en factores
+    de riesgo laboral ponderados:
+    - Salario mínimo de referencia: Salario Básico Unificado (SBU) Ecuador 2026 ($470 USD).
+      El umbral crítico es SBU + 30% ($611 USD).
+    - Regla de burnout: horas_extra_semana >= 10 incrementa probabilidad.
+    - Relación de edad y satisfacción: Empleados jóvenes (edad <= 35) insatisfechos 
+      (satisfaccion <= 2) tienen el mayor incremento de probabilidad (+0.30).
+    - Ajuste de distancia: Distancia al trabajo > 50 km como factor de riesgo (+0.15), 
+      corrigiendo la regla original para reflejar que mayor distancia aumenta la rotación.
+    - Demás factores: Estancamiento profesional (sin ascenso, pocas capacitaciones, 
+      pocos proyectos) y baja evaluación añaden incrementos moderados a la probabilidad.
+  
+  • Subproceso 1.3: Generación Estocástica y Etiquetado Binario
+    Generar el dataset aplicando una variable aleatoria uniforme sobre la probabilidad 
+    acumulada para asignar la etiqueta 'renuncia' (1 o 0), garantizando que no sea 
+    una asignación puramente aleatoria.
+  
+  • Subproceso 1.4: Exportación y Almacenamiento
+    Guardar el dataset generado en 'datos/dataset_empleados.csv'.
+
+* VALIDACIÓN DE LA FASE 1:
+  - Verificar que el dataset cuente con al menos 300 registros.
+  - Asegurar que no existan valores nulos ni fuera de los rangos especificados.
+  - Validar que la proporción de la clase positiva (renuncia=1) se sitúe entre 
+    25% y 35%, simulando un desbalance de clases realista pero manejable.
+
+FASE 2: ANÁLISIS EXPLORATORIO DE DATOS (EDA)
+================================================================================
+Objetivo: Caracterizar estadísticamente el dataset y hallar los principales 
+patrones visuales y de correlación relacionados con la renuncia.
+
+Subprocesos:
+  • Subproceso 2.1: Cálculo de Estadísticas Descriptivas
+    Calcular media, desviación estándar, valores mínimo y máximo, y percentiles 
+    (Q1, mediana/Q2, Q3) para todas las variables cuantitativas.
+  • Subproceso 2.2: Generación del Heatmap de Correlación
+    Construir la matriz de correlación de Pearson y visualizarla con un heatmap. 
+    Identificar y extraer las 3 variables con mayor coeficiente de correlación lineal 
+    (en valor absoluto) respecto a la variable 'renuncia'.
+  • Subproceso 2.3: Análisis de Distribución de Clases
+    Graficar la frecuencia de la variable objetivo 'renuncia' para diagnosticar 
+    visualmente el grado de desbalance e informar la estrategia a seguir.
+  • Subproceso 2.4: Análisis de Boxplots
+    Generar gráficos de caja (boxplots) separados por el target 'renuncia' para:
+    - salario_mensual
+    - satisfaccion_laboral
+    Analizar la diferencia de medianas, dispersiones (IQR) y presencia de outliers.
+
+* VALIDACIÓN DE LA FASE 2:
+  - Confirmar que las 3 correlaciones principales coinciden con las variables 
+    más ponderadas en el generador lógico de la Fase 1.
+  - Garantizar la existencia de explicaciones escritas exhaustivas que interpreten 
+    las visualizaciones y los patrones en el informe técnico.
+
+FASE 3: INGENIERÍA DE CARACTERÍSTICAS Y PREPROCESAMIENTO
+================================================================================
+Objetivo: Preparar el conjunto de datos para que los algoritmos de machine 
+learning procesen las variables bajo las condiciones matemáticas óptimas.
+
+Subprocesos:
+  • Subproceso 3.1: Partición del Dataset
+    Dividir los datos en conjuntos de Entrenamiento (80%) y Prueba (20%), 
+    asegurando la reproducibilidad mediante la semilla 'random_state=42'.
+  • Subproceso 3.2: Estandarización de Variables Numéricas
+    Instanciar y ajustar 'StandardScaler' únicamente sobre el conjunto de 
+    entrenamiento (para evitar filtración de información / Data Leakage). 
+    Transformar tanto el conjunto de entrenamiento como el de prueba.
+
+* VALIDACIÓN DE LA FASE 3:
+  - Comprobar que las dimensiones de las matrices X_train, y_train, X_test, y_test 
+    corresponden a la división 80/20.
+  - Verificar que el escalador StandardScaler NO ha sido ajustado (fit) usando 
+    datos del conjunto de prueba.
+
+FASE 4: ENTRENAMIENTO Y COMPARATIVA DE MODELOS BASE
+================================================================================
+Objetivo: Implementar los tres algoritmos requeridos y evaluar su capacidad 
+predictiva preliminar sobre el conjunto de prueba.
+
+Subprocesos:
+  • Subproceso 4.1: Regresión Logística (Modelo de Referencia)
+    Entrenar con datos estandarizados. Explicar su fundamentación matemática 
+    (función sigmoide y pesos).
+  • Subproceso 4.2: Random Forest (Modelo de Ensamble por Bagging)
+    Entrenar el clasificador de bosque aleatorio. Extraer la importancia de 
+    características (Gini Importance) y graficarla.
+  • Subproceso 4.3: Gradient Boosting / XGBoost (Modelo Avanzado de Boosting)
+    Entrenar el clasificador avanzado. Extraer la importancia de características 
+    e identificar variables de mayor peso.
+  • Subproceso 4.4: Evaluación Multimétrica de Clasificación
+    Para cada modelo, calcular y reportar sobre el conjunto de prueba:
+    - Accuracy (Exactitud)
+    - Precisión (Precision)
+    - Sensibilidad (Recall)
+    - F1-Score
+    - AUC-ROC
+  • Subproceso 4.5: Generación de Gráficos Comparativos
+    - Diseñar una figura unificada con las curvas ROC de los 3 modelos.
+    - Generar las matrices de confusión individuales.
+
+* VALIDACIÓN DE LA FASE 4:
+  - Corroborar que las métricas reportadas concuerdan exactamente con las matrices 
+    de confusión y las curvas ROC generadas.
+  - Asegurar la exportación limpia de todas las imágenes en formato PNG a un 
+    directorio de recursos para el informe técnico.
+
+FASE 5: OPTIMIZACIÓN Y VALIDACIÓN CRUZADA
+================================================================================
+Objetivo: Tomar el mejor modelo de la Fase 4, robustecer su validación y 
+afinar sus hiperparámetros para mejorar su desempeño predictivo.
+
+Subprocesos:
+  • Subproceso 5.1: Validación Cruzada de Estabilidad (k-fold, k=5)
+    Aplicar validación cruzada al mejor modelo utilizando el F1-Score como métrica 
+    objetivo. Calcular y documentar la media y la desviación estándar para 
+    cuantificar la variabilidad del rendimiento.
+  • Subproceso 5.2: Búsqueda de Hiperparámetros (GridSearchCV / RandomizedSearchCV)
+    Configurar una búsqueda sistemática sobre al menos 3 hiperparámetros clave 
+    del mejor modelo (ej. para Random Forest: n_estimators, max_depth, min_samples_split).
+    Identificar la combinación óptima de hiperparámetros.
+  • Subproceso 5.3: Evaluación del Modelo Optimizado
+    Entrenar el modelo final con los hiperparámetros optimizados y evaluar en 
+    el conjunto de prueba. Generar una tabla comparativa detallada: Modelo Base 
+    vs Modelo Optimizado.
+
+* VALIDACIÓN DE LA FASE 5:
+  - Garantizar que la búsqueda de hiperparámetros no produzca overfitting (evaluando 
+    la brecha de rendimiento entre validación y test).
+  - Verificar que la media y la desviación estándar del F1-Score estén reportadas.
+
+FASE 6: ELABORACIÓN DE ENTREGABLES Y CIERRE
+================================================================================
+Objetivo: Preparar la documentación escrita, el material audiovisual y el 
+código fuente conforme a las exigencias de la rúbrica de evaluación.
+
+Subprocesos:
+  • Subproceso 6.1: Redacción del Informe PDF (Máximo 6 páginas)
+    Estructurar el documento formal con secciones claras:
+    - Metodología y reglas de generación del dataset (con su sustento teórico de RRHH).
+    - Resultados del EDA (incluyendo visualizaciones estructuradas).
+    - Tabla comparativa de métricas base y del modelo optimizado.
+    - Respuestas detalladas a las 6 preguntas técnicas teóricas del informe.
+    - Conclusiones y recomendaciones de negocio (impacto financiero de falsos 
+      positivos vs falsos negativos en contratación y retención).
+  • Subproceso 6.2: Grabación del Video Técnico (4 a 5 minutos)
+    Grabar la pantalla ejecutando el código en vivo, con la cámara web encendida 
+    mostrando el rostro visible en todo momento. Seguir la estructura estricta:
+    - 00:00-00:30: Presentación personal y justificación del dataset.
+    - 00:30-02:00: Explicación de los gráficos del EDA y las curvas ROC.
+    - 02:00-04:00: Resolución de las 4 preguntas técnicas asignadas al video.
+    - 04:00-05:00: Conclusiones y recomendación final del modelo.
+  • Subproceso 6.3: Empaquetamiento y Carga del Código
+    Limpiar comentarios redundantes en el Jupyter Notebook, verificar la ejecución 
+    secuencial libre de errores desde la primera celda (Restart and Run All) y 
+    subir el código al repositorio de GitHub o Google Colab público.
+
+* VALIDACIÓN DE LA FASE 6:
+  - Confirmar visualmente que el video dura entre 4 y 5 minutos y que la cámara web 
+    no obstruye el código o los gráficos mostrados.
+  - Asegurar la consistencia de los datos presentados entre el código, el PDF y el video.
+  - Realizar una auditoría final contra la rúbrica de evaluación para evitar 
+    cualquier penalización (e.g., ausencia de reglas de coherencia, falta de 
+    visualizaciones, o plagio de respuestas).
+
+================================================================================
+  FIN DEL PLAN DE IMPLEMENTACIÓN
+================================================================================

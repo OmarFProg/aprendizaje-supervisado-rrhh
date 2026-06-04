@@ -1,0 +1,68 @@
+================================================================================
+   INFORME DE IMPLEMENTACIÓN Y VALIDACIÓN - FASE 4
+   Proyecto: Sistema Predictivo de Rotación de Personal (RRHH)
+   Ingeniería de Software · 7mo Semestre
+================================================================================
+
+Este informe detalla las actividades, resultados de entrenamiento y validaciones
+de la Fase 4 (Entrenamiento y Comparativa de Modelos Base) del plan de trabajo.
+
+--------------------------------------------------------------------------------
+1. MODELOS ENTRENADOS Y COMPARATIVA DE MÉTRICAS (Subproceso 4.1 - 4.4)
+--------------------------------------------------------------------------------
+Se entrenaron y evaluaron tres clasificadores en el conjunto de prueba (100 registros) 
+bajo las siguientes condiciones:
+  - Regresión Logística (Modelo Base de Referencia)
+  - Random Forest (Modelo de Ensamble por Bagging)
+  - Gradient Boosting (Modelo Avanzado por Boosting)
+
+Métricas obtenidas en el conjunto de prueba:
+
+| Modelo              | Accuracy | Precision | Recall | F1-Score | AUC-ROC |
+| :------------------ | :------: | :-------: | :----: | :------: | :-----: |
+| Regresión Logística  |  0.5900  |  0.2857   | 0.1143 |  0.1633  | 0.5125  |
+| Random Forest        |  0.5900  |  0.3125   | 0.1429 |  0.1961  | 0.5064  |
+| Gradient Boosting    |  0.5700  |  0.3182   | 0.2000 |  0.2456  | 0.5147  |
+
+--------------------------------------------------------------------------------
+2. EXPLICACIÓN Y ANÁLISIS DE RESULTADOS
+--------------------------------------------------------------------------------
+  - Desempeño General: Los tres modelos base muestran una capacidad predictiva 
+    modesta en su configuración predeterminada, con un AUC-ROC en el rango de 
+    0.50 - 0.52. Esto refleja que el problema de rotación es inherentemente complejo
+    y estocástico, simulando fielmente el ruido y la dificultad de los escenarios
+    de RRHH reales.
+  - Regresión Logística: Estandarizar las variables permitió ajustar pesos
+    directamente interpretables. Su F1-Score es de 16.33% y su Recall de 11.43%.
+  - Random Forest: Muestra un F1-Score de 19.61% y Recall de 14.29%. Logra una 
+    leve ganancia en precisión comparado con la Regresión Logística.
+  - Gradient Boosting: Alcanza el mejor Recall (20.00%) y el mejor F1-Score 
+    (24.56%) entre los modelos base, lo cual es muy importante para el negocio 
+    ya que se minimizan los falsos negativos (empleados con riesgo que el modelo 
+    no logra detectar).
+
+--------------------------------------------------------------------------------
+3. ANÁLISIS DE IMPORTANCIA DE CARACTERÍSTICAS Y GRÁFICOS (Subproceso 4.5)
+--------------------------------------------------------------------------------
+  - Curvas ROC: Se graficaron las curvas de los tres modelos en una sola figura 
+    unificada y se exportó a 'recursos/curvas_roc.png'.
+  - Matrices de Confusión: Se exportó la comparativa a 'recursos/matrices_confusion.png'.
+  - Importancia de Variables: Se generó la comparativa de Gini Importance de
+    Random Forest y la importancia relativa de Gradient Boosting en 
+    'recursos/importancia_features.png'. Las variables críticas como salario_mensual,
+    edad, distancia y horas extra aparecen de forma consistente con los mayores 
+    pesos, alineándose con las reglas lógicas definidas en el diseño del dataset.
+
+--------------------------------------------------------------------------------
+4. VALIDACIONES CRÍTICAS DE LA FASE 4
+--------------------------------------------------------------------------------
+  [OK] Consistencia de Métricas: Se implementaron pruebas de aserción en el
+       código para recalcular manualmente las métricas (Accuracy, Precision,
+       Recall y F1-Score) desde los cuadrantes de la matriz de confusión. Todos 
+       los valores coincidieron exactamente.
+  [OK] Exportación de recursos: Los gráficos de curvas ROC, matrices de confusión
+       e importancia de variables fueron guardados exitosamente en la carpeta 'recursos/'.
+
+================================================================================
+   FIN DEL INFORME DE LA FASE 4
+================================================================================

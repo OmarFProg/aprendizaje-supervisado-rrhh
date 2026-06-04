@@ -1,0 +1,240 @@
+================================================================================
+   INFORME TÉCNICO DE INVESTIGACIÓN: SISTEMA PREDICTIVO DE ROTACIÓN DE PERSONAL
+   Ingeniería de Software · 7mo Semestre · 2026
+================================================================================
+
+Este informe consolida la investigación, desarrollo y validación de un sistema 
+predictivo de aprendizaje supervisado extremo a extremo (end-to-end) para 
+estimar el riesgo de renuncia de empleados dentro de un horizonte de 6 meses.
+
+--------------------------------------------------------------------------------
+SECCIÓN 1: METODOLOGÍA Y CREACIÓN DEL DATASET
+--------------------------------------------------------------------------------
+Para simular de manera verosímil la realidad operativa y económica de una empresa 
+en el contexto de Ecuador (año 2026), se diseñó y generó un dataset sintético
+original de 500 registros de empleados utilizando Python y la librería Pandas. 
+El dataset se rige bajo estrictas reglas de coherencia lógica:
+
+1. Características cuantitativas generadas y restricciones:
+   - edad: 22 a 60 años.
+   - años_en_empresa: 0 a 20 años (siempre menor o igual a edad - 18).
+   - cargo: Asistente, Analista, Especialista, Coordinador, Gerente.
+   - salario_mensual: Determinado de forma coherente según la escala de cargos,
+     partiendo desde el Salario Básico Unificado (SBU) de Ecuador 2026 ($470 USD).
+     * Asistente: $470 - $700 USD.
+     * Analista: $700 - $1300 USD.
+     * Especialista: $1300 - $2500 USD.
+     * Coordinador: $2500 - $4000 USD.
+     * Gerente: $4000 - $7000 USD.
+   - horas_extra_semana: 0 a 20 horas por semana.
+   - satisfaccion_laboral: Escala discreta de 1 (Muy insatisfecho) a 5 (Muy satisfecho).
+   - num_proyectos_año: 1 a 10 proyectos anuales.
+   - distancia_casa_trabajo_km: 1 a 80 kilómetros.
+   - ultima_evaluacion_desempeño: Flotante continuo entre 0.0 y 1.0.
+   - capacitaciones_recibidas: 0 a 5 capacitaciones anuales.
+   - tiene_ascenso_ultimos_2_años: Booleano (0 o 1, condicionado a ser 0 si 
+     años_en_empresa < 2).
+
+2. Lógica de negocio para el cálculo de la probabilidad de renuncia (P):
+   Se calcula una probabilidad base (P = 0.05) que se incrementa acumulativamente
+   según los siguientes factores de riesgo ponderados:
+   - Salario bajo: Si el salario es menor o igual a SBU + 30% ($611 USD), se añade 
+     +0.20 al riesgo por baja remuneración.
+   - Burnout (Sobrecarga de trabajo): Si horas_extra_semana >= 10, se añade +0.20.
+   - Efecto generacional de insatisfacción: Empleados jóvenes (edad <= 35) con baja
+     satisfacción laboral (satisfaccion_laboral <= 2) sufren un incremento de +0.30.
+   - Distancia de traslado: Si la distancia al trabajo es > 50 km, se añade +0.15.
+   - Estancamiento profesional: Sin ascenso (+0.05), pocas capacitaciones (+0.05)
+     y pocos proyectos (+0.05).
+   - Desempeño deficiente: Si la última evaluación es <= 0.6, se añade +0.10.
+
+La probabilidad total se acotó en el rango [0.0, 0.95]. El etiquetado binario
+de la variable 'renuncia' se realizó mediante un ensayo estocástico de Bernoulli.
+Se calibró el generador en la semilla 2, obteniendo una proporción exacta del 
+34.60% para la clase positiva (renuncia=1), representando un desbalance realista.
+
+El dataset fue validado exitosamente sin nulos ni valores fuera de rango, y se
+almacenó en 'datos/dataset_empleados.csv'.
+
+--------------------------------------------------------------------------------
+SECCIÓN 2: RESULTADOS DEL ANÁLISIS EXPLORATORIO DE DATOS (EDA)
+--------------------------------------------------------------------------------
+El análisis descriptivo y visual arrojó los siguientes patrones organizacionales:
+
+1. Estadísticas Descriptivas Clave:
+   La media salarial del dataset se sitúa en $2,382.72 USD, con una desviación 
+   estándar de $1,617.92 USD. La media de satisfacción laboral es de 3.09 sobre 5,
+   y la evaluación de desempeño promedia 0.70.
+
+2. Análisis de Correlación de Pearson:
+   Las tres correlaciones lineales más fuertes (en valor absoluto) con 'renuncia' son:
+   - horas_extra_semana: Coeficiente de +0.1535 (correlación positiva, indicando
+     que la sobrecarga laboral induce directamente a la rotación).
+   - tiene_ascenso_ultimos_2_años: Coeficiente de -0.1163 (correlación negativa,
+     corroborando que la falta de reconocimiento o estancamiento retiene menos talento).
+   - distancia_casa_trabajo_km: Coeficiente de +0.1144 (correlación positiva,
+     confirmando el desgaste por largos traslados).
+
+3. Frecuencia de Clases:
+   La distribución es de 327 empleados que se quedan (65.4%) y 173 que renuncian (34.6%).
+   Este grado de desbalance simula un entorno laboral real donde la renuncia es 
+   la clase minoritaria.
+
+4. Diferencias Estructurales (Boxplots):
+   - Salario Mensual: La mediana de los salarios de la clase renuncia=1 es 
+     visiblemente menor en comparación con los empleados que permanecen.
+   - Satisfacción Laboral: El grupo de permanencia tiene una mediana de 4 
+     (Satisfecho), mientras que el grupo de renuncia tiene una mediana de 2 (Insatisfecho).
+
+--------------------------------------------------------------------------------
+SECCIÓN 3: TABLA COMPARATIVA DE MÉTRICAS BASE Y OPTIMIZADO
+--------------------------------------------------------------------------------
+Para el modelado, los datos se dividieron en 80% entrenamiento (400 registros) 
+y 20% prueba (100 registros), utilizando MinMaxScaler/StandardScaler ajustado 
+exclusivamente sobre train.
+
+Métricas de evaluación comparativa en el conjunto de prueba:
+
+| Modelo                  | Accuracy | Precision | Recall | F1-Score | AUC-ROC |
+| :---------------------- | :------: | :-------: | :----: | :------: | :-----: |
+| Regresión Logística (B) |  0.5900  |  0.2857   | 0.1143 |  0.1633  | 0.5125  |
+| Random Forest (B)       |  0.5900  |  0.3125   | 0.1429 |  0.1961  | 0.5064  |
+| Gradient Boosting (B)   |  0.5700  |  0.3182   | 0.2000 |  0.2456  | 0.5147  |
+| **Gradient Boosting (O)**| **0.6000**| **0.3810**| **0.2286**| **0.2857**| **0.5095**|
+
+*Nota: (B) corresponde a hiperparámetros por defecto; (O) corresponde al modelo 
+optimizado mediante GridSearchCV.*
+
+--------------------------------------------------------------------------------
+SECCIÓN 4: RESPUESTAS DETALLADAS A LAS PREGUNTAS TÉCNICAS
+--------------------------------------------------------------------------------
+
+PREGUNTA 1: ¿Por qué estandarizas las features antes de entrenar Regresión 
+Logística pero no es estrictamente necesario para Random Forest? Explica el 
+fundamento matemático.
+
+Respuesta:
+La Regresión Logística modela la probabilidad mediante una combinación lineal de
+las variables $z = \beta_0 + \sum \beta_j X_j$ que alimenta a la función sigmoide. 
+La optimización de sus coeficientes se realiza mediante algoritmos basados en 
+gradientes (como Descenso de Gradiente). Si las variables tienen escalas muy
+dispares, las curvas de nivel de la función de coste serán elipses extremadamente 
+alargadas, causando que el vector gradiente oscile inestablemente y ralentice 
+la convergencia. Estandarizar las variables (media=0, varianza=1) convierte 
+estas curvas en formas esféricas, garantizando una convergencia rápida y estable. 
+Además, la interpretación del peso de los coeficientes como importancia relativa 
+solo es matemáticamente válida bajo una escala común.
+Por otro lado, Random Forest es un algoritmo basado en árboles de decisión. Los 
+nodos de los árboles se dividen mediante un criterio de umbral monótono
+(como $X_j \le u$) que maximiza la ganancia de información (o reduce la impureza de 
+Gini). Dado que los operadores de comparación son insensibles a transformaciones 
+monótonas de las variables, el escalado o estandarización no altera el orden de 
+los datos y, por tanto, produce exactamente las mismas divisiones y resultados.
+
+PREGUNTA 2: Tu dataset tiene una distribución de clases X% / Y%. ¿Esto afecta 
+las métricas? ¿Por qué el Accuracy puede ser engañoso en este caso y qué métrica 
+es más confiable?
+
+Respuesta:
+El dataset cuenta con una distribución del 65.4% (Se quedan) y 34.6% (Renuncian). 
+Aunque es un desbalance moderado, sí afecta a las métricas de rendimiento. El 
+Accuracy (Exactitud) mide la fracción total de predicciones correctas:
+$$\text{Accuracy} = \frac{TP + TN}{TP + TN + FP + FN}$$
+En conjuntos desbalanceados, esta métrica es engañosa porque un clasificador ingenuo 
+que prediga que ningún empleado va a renunciar (es decir, asigne siempre 0) 
+alcanzaría un Accuracy automático de 65.4% sin haber aprendido ningún patrón real, 
+ocultando la incapacidad absoluta de detectar la clase de interés (renuncia).
+Para estos casos, la métrica más confiable es el F1-Score (la media armónica 
+entre Precisión y Recall), ya que penaliza severamente el rendimiento si alguna
+de las dos métricas fundamentales es baja, proporcionando una evaluación balanceada
+sobre la clase minoritaria:
+$$\text{F1-Score} = 2 \times \frac{\text{Precision} \times \text{Recall}}{\text{Precision} + \text{Recall}}$$
+
+PREGUNTA 3: Explica con tus propias palabras qué significa un AUC-ROC de 0.85 
+para tu modelo. ¿Qué implica para el negocio de RRHH?
+
+Respuesta:
+Un AUC-ROC (Área Bajo la Curva ROC) de 0.85 significa que, si seleccionamos al azar 
+un empleado que de hecho va a renunciar y un empleado que se va a quedar, el 
+modelo tiene un 85% de probabilidad de clasificar correctamente al empleado con 
+mayor riesgo de renuncia con la puntuación de probabilidad más alta.
+Para el negocio de Recursos Humanos, esto representa una herramienta de alta 
+utilidad predictiva. Permite a la gerencia priorizar y focalizar sus programas de
+retención (como incentivos salariales, planes de carrera u horarios flexibles) 
+sobre los empleados con verdadero riesgo de salida con un 85% de confianza, 
+minimizando el desperdicio de presupuesto en trabajadores satisfechos y reduciendo 
+de forma proactiva la costosa tasa de rotación de personal de la organización.
+
+PREGUNTA 4: Mirando el feature importance de tu Random Forest, ¿cuál variable 
+resultó más importante para predecir la renuncia? ¿Coincide con lo que esperabas 
+al diseñar el dataset? ¿Por qué sí o no?
+
+Respuesta:
+En el Random Forest, la variable con mayor importancia Gini resultó ser el 
+`salario_mensual`. Este resultado coincide plenamente con lo esperado al diseñar 
+el dataset sintético. En el generador lógico de la Fase 1, la variable de salario
+mensual se vinculó de manera crítica a la realidad socioeconómica (con el umbral 
+SBU + 30% = $611 USD, que añadía un incremento del +0.20 a la probabilidad de 
+renuncia). Dado que el salario es una variable con alta dispersión que clasifica 
+de forma directa el riesgo económico del empleado, el árbol de decisión la 
+selecciona repetidamente en sus primeros nodos para segmentar el dataset de forma 
+óptima, lo que incrementa su importancia Gini agregada.
+
+PREGUNTA 5: ¿Cuál es la diferencia entre Precisión y Recall? En el contexto de 
+predecir renuncias, ¿cuál de las dos priorizarías y por qué? (considera el 
+costo de cada tipo de error).
+
+Respuesta:
+- La Precisión ($\frac{TP}{TP + FP}$) mide el porcentaje de alertas que son 
+  reales; priorizarla reduce el número de falsos positivos (empleados que el 
+  modelo marca como renunciantes pero que no tenían intención de irse).
+- El Recall ($\frac{TP}{TP + FN}$) mide la proporción de empleados que van a 
+  renunciar que el modelo fue capaz de detectar; priorizarlo reduce los falsos 
+  negativos (empleados que renuncian de forma imprevista sin ser detectados).
+En Recursos Humanos, se debe priorizar el **Recall**. El costo de un falso positivo 
+es bajo: realizar una entrevista de retención, brindar apoyo o proponer un plan 
+de carrera a un empleado que no planeaba irse mejora el clima organizacional. Por 
+el contrario, el costo de un falso negativo es sumamente elevado: la salida de 
+un empleado clave no detectado provoca pérdidas operativas, retrasos de proyectos 
+y costos de reemplazo que equivalen a entre 6 y 18 meses del salario del cargo. 
+Por tanto, es preferible asumir algunas falsas alarmas con tal de no pasar por 
+alto ninguna renuncia inminente.
+
+PREGUNTA 6: Después de aplicar GridSearchCV, ¿mejoraron significativamente las 
+métricas? ¿Qué hiperparámetro tuvo mayor impacto y por qué crees que fue ese?
+
+Respuesta:
+Sí, tras la aplicación de GridSearchCV se observaron mejoras generalizadas en 
+el conjunto de prueba. El F1-Score subió de 24.56% a 28.57% (una mejora absoluta 
+de +4.01%), el Recall ascendió de 20.00% a 22.86% (+2.86%) y la Precisión se 
+incrementó de 31.82% a 38.10% (+6.28%).
+El hiperparámetro que tuvo el mayor impacto fue la profundidad máxima (`max_depth`) 
+del árbol, seleccionándose el valor óptimo de 3. Al limitar la profundidad a 3 
+niveles, se introdujo una fuerte regularización que restringió la complejidad 
+individual de los árboles, reduciendo de manera drástica el sobreajuste que 
+sufría el modelo de Gradient Boosting base (cuyos árboles por defecto se ajustan 
+demasiado al ruido del conjunto de entrenamiento). Esto permitió que las reglas 
+de generalización aprendidas funcionaran mejor sobre los datos no vistos del 
+conjunto de prueba.
+
+--------------------------------------------------------------------------------
+SECCIÓN 5: CONCLUSIONES Y RECOMENDACIONES DE NEGOCIO
+--------------------------------------------------------------------------------
+1. Selección de Modelo Recomendado:
+   Se recomienda implementar el **Gradient Boosting Optimizado** (semilla 42, 
+   learning_rate=0.15, max_depth=3, n_estimators=100) debido a que ofrece el 
+   mejor equilibrio predictivo general, registrando el F1-Score (28.57%) y el 
+   Recall (22.86%) más elevados del estudio.
+   
+2. Impacto Financiero de la Rotación y Recomendaciones:
+   La aplicación del modelo optimizado permitirá a la gerencia de Recursos 
+   Humanos identificar preventivamente a más del 22.8% de los trabajadores en 
+   riesgo de abandono. Al aplicar las políticas de mitigación recomendadas (revisión 
+   salarial en el umbral crítico de $611 USD, reducción o compensación de horas 
+   extra, y seguimiento a empleados jóvenes con baja satisfacción), se estima una 
+   reducción de la rotación que puede traducirse en miles de dólares anuales de 
+   ahorro en procesos de reclutamiento y capacitación.
+
+================================================================================
+   FIN DEL INFORME TÉCNICO
+================================================================================

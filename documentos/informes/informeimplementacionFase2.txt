@@ -1,0 +1,78 @@
+================================================================================
+   INFORME DE IMPLEMENTACIÓN Y VALIDACIÓN - FASE 2
+   Proyecto: Sistema Predictivo de Rotación de Personal (RRHH)
+   Ingeniería de Software · 7mo Semestre
+================================================================================
+
+Este informe detalla las actividades, resultados y validaciones relacionados con 
+la Fase 2 (Análisis Exploratorio de Datos - EDA) del plan de trabajo.
+
+--------------------------------------------------------------------------------
+1. RESUMEN DE ESTADÍSTICAS DESCRIPTIVAS (Subproceso 2.1)
+--------------------------------------------------------------------------------
+Las variables cuantitativas del dataset presentan las siguientes estadísticas clave:
+  - Edad: Promedio de 41.3 años (desviación std = 11.1), rango de 22 a 60 años.
+  - Años en Empresa: Promedio de 8.56 años (desviación std = 5.8), rango de 0 a 20.
+  - Salario Mensual: Promedio de $2,382.72 USD (std = $1,617.92), rango de $470 a 
+    $6,966. Esto refleja una estructura coherente según la escala salarial.
+  - Horas Extra: Promedio de 10.3 horas semanales, cubriendo todo el rango de 0 a 20.
+  - Satisfacción Laboral: Promedio de 3.09 (escala 1 a 5).
+  - Distancia al Trabajo: Promedio de 41.2 km, distribuidos uniformemente (1 a 80).
+  - Evaluación de Desempeño: Promedio de 0.70 (std = 0.14).
+
+--------------------------------------------------------------------------------
+2. ANÁLISIS DE CORRELACIÓN DE PEARSON (Subproceso 2.2)
+--------------------------------------------------------------------------------
+Se calculó la correlación lineal entre todas las variables numéricas y el target:
+  - top 1: horas_extra_semana (Coeficiente = +0.1535)
+  - top 2: tiene_ascenso_ultimos_2_años (Coeficiente = -0.1163)
+  - top 3: distancia_casa_trabajo_km (Coeficiente = +0.1144)
+
+Análisis de Coherencia:
+  - El coeficiente positivo para horas extra corrobora la hipótesis de sobrecarga
+    laboral como factor de renuncia (Burnout).
+  - El coeficiente negativo para ascenso en los últimos 2 años corrobora que la
+    falta de desarrollo y reconocimiento incrementa la probabilidad de renuncia.
+  - El coeficiente positivo para distancia casa-trabajo valida la regla de que 
+    los traslados más largos añaden un desgaste físico que incentiva la rotación.
+
+--------------------------------------------------------------------------------
+3. DISTRIBUCIÓN DE CLASES (Subproceso 2.3)
+--------------------------------------------------------------------------------
+La variable objetivo 'renuncia' muestra la siguiente distribución:
+  - Empleados que se quedan (renuncia = 0): 327 (65.4%)
+  - Empleados que renuncian (renuncia = 1): 173 (34.6%)
+
+El desbalance del dataset (aproximadamente 65/35) es realista para escenarios de
+RRHH y se mantiene en el rango ideal establecido en la Fase 1.1 para entrenar
+modelos supervisados con estabilidad matemática (sin problemas críticos de
+representación de la clase minoritaria).
+
+--------------------------------------------------------------------------------
+4. ANÁLISIS DE BOXPLOTS (Subproceso 2.4)
+--------------------------------------------------------------------------------
+Se analizaron las diferencias estructurales mediante gráficos de caja:
+  - Salario Mensual vs Renuncia:
+    * La clase que renuncia (1) tiene una mediana de salario visiblemente menor
+      que la clase que se queda (0).
+    * Esto confirma que los salarios más bajos son un incentivo principal de la
+      renuncia voluntaria, tal como se programó con el umbral crítico ($611 USD).
+  - Satisfacción Laboral vs Renuncia:
+    * La mediana de satisfacción para los empleados que se quedan es de 4
+      (satisfechos), mientras que para los que renuncian cae a 2 (insatisfechos).
+    * Esta gran brecha muestra que la satisfacción laboral es un predictor clave.
+
+--------------------------------------------------------------------------------
+5. VALIDACIONES CRÍTICAS DE LA FASE 2
+--------------------------------------------------------------------------------
+  [OK] Generación y almacenamiento de gráficos en 'recursos/':
+       - recursos/heatmap_correlacion.png
+       - recursos/distribucion_clases.png
+       - recursos/boxplots_analisis.png
+  [OK] Coincidencia de variables top correlacionadas con las reglas del generador
+       de la Fase 1 (horas extra, ascenso y distancia).
+  [OK] Interpretaciones y explicaciones exhaustivas incluidas en el notebook.
+
+================================================================================
+   FIN DEL INFORME DE LA FASE 2
+================================================================================

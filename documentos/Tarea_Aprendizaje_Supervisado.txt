@@ -1,0 +1,146 @@
+TAREA COMPLEMENTARIA
+
+Aprendizaje Supervisado · Ingeniería de Software · 7mo Semestre
+
+Contexto del problema
+Eres analista de datos en una empresa de recursos humanos. 
+Tu jefe necesita un sistema que prediga si un empleado renunciará en los próximos 6 meses, basándose en características recopiladas durante su permanencia en la empresa. No existe un dataset listo: debes construirlo tú, entrenarlo y demostrar que tu modelo tiene valor predictivo real.
+
+1. Creación del Dataset
+Debes construir un dataset original de mínimo 300 registros simulando una empresa real. 
+El dataset debe ser coherente y verosímil — no valores aleatorios sin sentido.
+
+Variables obligatorias (features)
+edad: número entero entre 22 y 60
+
+años_en_empresa: entre 0 y 20, coherente con la edad
+
+salario_mensual: en dólares, coherente con el puesto
+
+horas_extra_semana: entre 0 y 20
+
+satisfaccion_laboral: escala 1-5 (1=muy insatisfecho, 5=muy satisfecho)
+
+num_proyectos_año: entre 1 y 10
+
+distancia_casa_trabajo_km: entre 1 y 80
+
+ultima_evaluacion_desempeño: score entre 0.0 y 1.0
+
+capacitaciones_recibidas: entre 0 y 5 por año
+
+tiene_ascenso_ultimos_2_años: 0 o 1
+
+Variable objetivo
+renuncia: 1 = renunció en los próximos 6 meses, 0 = se quedó
+
+Regla de coherencia — OBLIGATORIA
+El dataset NO puede ser aleatorio puro. Debes programar lógica de generación que refleje relaciones reales: por ejemplo, satisfaccion_laboral baja + horas_extra altas debe aumentar la probabilidad de renuncia. Documenta en el informe qué reglas usaste. Un dataset sin lógica interna tendrá penalización en la nota.
+
+2. Análisis Exploratorio (EDA)
+Calcula y muestra estadísticas descriptivas completas del dataset (media, std, min, max, percentiles).
+
+Genera un heatmap de correlación entre todas las variables numéricas. Identifica las 3 correlaciones más fuertes con la variable objetivo.
+
+Grafica la distribución de la variable renuncia. ¿Está balanceado el dataset? Si no, documenta qué harás al respecto.
+
+Genera boxplots de salario_mensual y satisfaccion_laboral separados por la variable renuncia. ¿Qué patrones observas?
+
+3. Modelado — Mínimo 3 algoritmos
+Debes implementar y comparar los siguientes tres algoritmos de clasificación supervisada:
+
+Regresión Logística — modelo base de referencia
+
+Random Forest — modelo de ensamble
+
+Gradient Boosting (XGBoost o sklearn) — modelo avanzado
+
+Para cada modelo debes:
+Dividir el dataset: 80% entrenamiento, 20% prueba. Usar random_state=42.
+
+Estandarizar features numéricas con StandardScaler (ajustar SOLO sobre train).
+
+Entrenar el modelo y predecir sobre el conjunto de prueba.
+
+Calcular: Accuracy, Precisión, Recall, F1-Score y AUC-ROC.
+
+Graficar la curva ROC de los 3 modelos en una sola figura para comparar.
+
+Graficar la matriz de confusión de cada modelo.
+
+Para Random Forest y Gradient Boosting: graficar feature importance.
+
+4. Optimización con Cross-Validation
+Aplicar k-fold cross-validation (k=5) al mejor modelo. Reportar la media y desviación estándar del F1-Score.
+
+Aplicar GridSearchCV o RandomizedSearchCV para optimizar al menos 3 hiperparámetros del mejor modelo. Documentar qué parámetros probaste y cuál fue el mejor conjunto.
+
+Comparar el modelo base vs el modelo optimizado con una tabla de métricas.
+
+5. Preguntas Técnicas
+Preguntas para el Informe (respuesta escrita)
+¿Por qué estandarizas las features antes de entrenar Regresión Logística pero no es estrictamente necesario para Random Forest? Explica el fundamento matemático.
+
+Tu dataset tiene una distribución de clases X% / Y%. ¿Esto afecta las métricas? ¿Por qué el Accuracy puede ser engañoso en este caso y qué métrica es más confiable?
+
+Explica con tus propias palabras qué significa un AUC-ROC de 0.85 para tu modelo. ¿Qué implica para el negocio de RRHH?
+
+Mirando el feature importance de tu Random Forest, ¿cuál variable resultó más importante para predecir la renuncia? ¿Coincide con lo que esperabas al diseñar el dataset? ¿Por qué sí o no?
+
+¿Cuál es la diferencia entre Precisión y Recall? En el contexto de predecir renuncias, ¿cuál de las dos priorizarías y por qué? (considera el costo de cada tipo de error).
+
+Después de aplicar GridSearchCV, ¿mejoraron significativamente las métricas? ¿Qué hiperparámetro tuvo mayor impacto y por qué crees que fue ese?
+
+Preguntas para el Video (responder en vivo mostrando el código/gráfico)
+Abre el notebook, ejecuta la celda de la curva ROC y explica en vivo por qué un modelo está por encima del otro.
+
+Señala en tu código exactamente dónde aplicas StandardScaler y explica por qué lo ajustas solo con datos de entrenamiento.
+
+Muestra la matriz de confusión de tu mejor modelo y explica qué significa cada cuadrante en términos del problema de negocio.
+
+¿Qué pasaría si alguien te dice que tu modelo tiene 95% de accuracy — sería eso suficiente para confiar en él? Responde mirando tus propios resultados.
+
+6. Entregables
+Entregables obligatorios — los tres deben estar presentes:
+
+CÓDIGO: Link a repositorio GitHub o Google Colab. Debe ejecutarse de inicio a fin sin errores. 
+Incluir comentarios que expliquen cada sección.
+
+INFORME PDF: Máximo 6 páginas. Estructura:
+
+Descripción del dataset creado y reglas de coherencia usadas
+
+Análisis exploratorio con gráficos y hallazgos
+
+Tabla comparativa de métricas de los 3 modelos
+
+Respuestas a las 6 preguntas técnicas escritas
+
+Conclusiones: ¿cuál modelo recomendarías a la empresa y por qué?
+
+VIDEO (4-5 minutos): Rostro visible en todo momento. Estructura del video:
+
+00:00-00:30 Presentación y descripción del dataset creado
+
+00:30-02:00 Mostrar y explicar los gráficos más importantes
+
+02:00-04:00 Responder las 4 preguntas técnicas del video en vivo
+
+04:00-05:00 Conclusión: modelo elegido y justificación
+
+7. Rúbrica de Evaluación
+Componente	Porcentaje	Criterios de evaluación
+Código funcional	25%	Corre sin errores · Lógica correcta · Bien estructurado y comentado · Usa el dataset propio · Incluye las visualizaciones requeridas
+Video con rostro (4-5 min)	40%	Rostro visible en todo momento · Responde correctamente las preguntas técnicas · Muestra y explica cada gráfico generado · Demuestra comprensión real del algoritmo
+Informe PDF	35%	Documenta el proceso de creación del dataset · Responde las preguntas escritas con fundamento técnico · Incluye capturas de gráficos con análisis · Redacción propia y clara
+TOTAL	100%	Nota sobre 10 puntos
+Criterios de penalización
+Dataset con valores aleatorios sin lógica coherente: -2 puntos
+
+Código que no corre o genera errores: 0% en ese componente
+
+Video sin rostro visible o grabado en pantalla sin cámara: 0% en video
+
+Respuestas copiadas literalmente de fuentes externas sin elaboración propia: -1 punto
+
+No incluir todos los gráficos requeridos: -0.5 por gráfico faltante

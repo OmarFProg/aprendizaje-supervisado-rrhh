@@ -1,0 +1,785 @@
+================================================================================
+  BASE TEÓRICA Y TÉCNICA — TAREA: APRENDIZAJE SUPERVISADO
+  Ingeniería de Software · 7mo Semestre
+================================================================================
+
+────────────────────────────────────────────────────────────────────────────────
+SECCIÓN 1 · ESTADÍSTICAS DESCRIPTIVAS
+────────────────────────────────────────────────────────────────────────────────
+
+1.1 MEDIA (µ o x̄)
+──────────────────
+Definición: Valor promedio de un conjunto de datos. Suma todos los valores y
+divide entre el número de observaciones.
+
+Fórmula:
+  x̄ = (x₁ + x₂ + ... + xₙ) / n  =  Σxᵢ / n
+
+Variables implícitas:
+  · xᵢ   → cada valor individual del conjunto
+  · n    → número total de observaciones
+  · Σ    → sumatoria de todos los valores
+
+Interpretación en el contexto del dataset:
+  La media de satisfaccion_laboral indica el nivel promedio de satisfacción
+  del conjunto de empleados; si es cercana a 1 o 2, la empresa tiene un
+  problema estructural de clima organizacional.
+
+────────────────────────────────────────────────────────────────────────────────
+
+1.2 DESVIACIÓN ESTÁNDAR (std / σ)
+──────────────────────────────────
+Definición: Mide qué tan dispersos están los datos respecto a la media.
+Un std bajo indica datos concentrados; un std alto indica datos muy dispersos.
+
+Fórmula (población):
+  σ = √[ Σ(xᵢ − µ)² / N ]
+
+Fórmula (muestra, corrección de Bessel):
+  s = √[ Σ(xᵢ − x̄)² / (n − 1) ]
+
+Variables implícitas:
+  · (xᵢ − x̄)²  → cuadrado de la diferencia de cada valor respecto a la media
+  · n − 1       → grados de libertad (corrección para muestras)
+  · √            → raíz cuadrada para volver a la unidad original
+
+Interpretación: Si salario_mensual tiene std = 800, la mayoría de salarios
+se encuentra en el rango [media − 800, media + 800].
+
+────────────────────────────────────────────────────────────────────────────────
+
+1.3 MÍNIMO Y MÁXIMO
+────────────────────
+Definición: El valor más pequeño (min) y más grande (max) observados en
+una variable.
+
+  min(X) = xᵢ tal que xᵢ ≤ xⱼ para todo j
+  max(X) = xᵢ tal que xᵢ ≥ xⱼ para todo j
+
+Uso: Detectar outliers (valores fuera del rango esperado) y validar que
+los datos generados respetan los rangos del enunciado (ej. edad entre 22-60).
+
+────────────────────────────────────────────────────────────────────────────────
+
+1.4 PERCENTILES
+───────────────
+Definición: El percentil P_k es el valor por debajo del cual cae el k% de
+las observaciones.
+
+Percentiles clave en estadística descriptiva:
+  · P25 (Q1) — 25% de los datos están por debajo
+  · P50 (Q2 = mediana) — 50% por debajo; no es afectado por outliers
+  · P75 (Q3) — 75% por debajo
+  · IQR = Q3 − Q1 (rango intercuartílico): mide dispersión central
+
+Cálculo aproximado (método lineal):
+  Posición = (k/100) × (n + 1)
+  Si la posición no es entera, se interpola entre los dos valores adyacentes.
+
+Interpretación en el dataset: El P25 de salario_mensual indica el salario
+que separa al 25% de empleados con menor remuneración del resto.
+
+────────────────────────────────────────────────────────────────────────────────
+SECCIÓN 2 · HEATMAP DE CORRELACIÓN
+────────────────────────────────────────────────────────────────────────────────
+
+2.1 DEFINICIÓN
+──────────────
+Un heatmap de correlación es una visualización matricial donde cada celda
+(i, j) muestra el coeficiente de correlación de Pearson entre la variable i
+y la variable j. El color de la celda indica la dirección e intensidad:
+  · Rojo/cálido   → correlación positiva fuerte (cercana a +1)
+  · Azul/frío     → correlación negativa fuerte (cercana a −1)
+  · Blanco/neutro → sin correlación (cercana a 0)
+
+2.2 COEFICIENTE DE CORRELACIÓN DE PEARSON
+──────────────────────────────────────────
+Fórmula:
+  r(X,Y) = Σ[(xᵢ − x̄)(yᵢ − ȳ)] / √[Σ(xᵢ − x̄)² · Σ(yᵢ − ȳ)²]
+
+Rango: −1 ≤ r ≤ +1
+
+Interpretación de magnitud:
+  |r| ≥ 0.70 → correlación fuerte
+  0.40 ≤ |r| < 0.70 → correlación moderada
+  |r| < 0.40 → correlación débil
+
+2.3 IDENTIFICACIÓN DE LAS 3 CORRELACIONES MÁS FUERTES CON LA VARIABLE OBJETIVO
+─────────────────────────────────────────────────────────────────────────────────
+Proceso:
+  1. Calcular la columna del heatmap correspondiente a "renuncia".
+  2. Tomar el valor absoluto de cada coeficiente (la dirección importa
+     menos que la magnitud para identificar influencia).
+  3. Ordenar de mayor a menor y seleccionar las 3 primeras (excluyendo
+     la correlación de renuncia consigo misma, que siempre es 1.0).
+
+Ejemplo esperado para este dataset:
+  satisfaccion_laboral ↔ renuncia: r ≈ −0.65 (más insatisfecho → más renuncia)
+  salario_mensual ↔ renuncia:      r ≈ −0.50
+  horas_extra_semana ↔ renuncia:   r ≈ +0.45
+
+NOTA: Correlación no implica causalidad. Una correlación alta entre
+distancia_casa_trabajo y renuncia no significa que la distancia "cause"
+la renuncia; puede haber variables confundidoras.
+
+────────────────────────────────────────────────────────────────────────────────
+SECCIÓN 3 · BALANCE DEL DATASET
+────────────────────────────────────────────────────────────────────────────────
+
+3.1 DATASET BALANCEADO
+───────────────────────
+Definición: La variable objetivo tiene una distribución aproximadamente
+equitativa entre sus clases.
+
+Ejemplo: renuncia=1 → 50%, renuncia=0 → 50%
+
+Implicaciones:
+  · El modelo aprende con igual número de ejemplos de cada clase.
+  · Las métricas estándar (Accuracy, F1) son representativas.
+  · No se requieren técnicas adicionales de muestreo.
+  · En la práctica es infrecuente; la realidad laboral tiene tasas de
+    renuncia menores al 30%, lo que genera desbalance.
+
+3.2 DATASET DESBALANCEADO
+──────────────────────────
+Definición: Una clase tiene muchos más ejemplos que la otra.
+
+Ejemplo típico RRHH: renuncia=0 → 75%, renuncia=1 → 25%
+
+Implicaciones y problemas:
+  · El modelo tiende a predecir siempre la clase mayoritaria y aun así
+    obtener Accuracy alto (ej. 75% prediciendo siempre "no renuncia").
+  · Las métricas de Precision, Recall y F1 para la clase minoritaria
+    serán artificialmente bajas.
+  · El AUC-ROC es más informativo en este caso que el Accuracy.
+
+Técnicas para tratar el desbalance:
+  a) OVERSAMPLING de la clase minoritaria:
+     · SMOTE (Synthetic Minority Over-sampling Technique): genera ejemplos
+       sintéticos interpolando entre vecinos cercanos de la clase minoritaria.
+  b) UNDERSAMPLING de la clase mayoritaria:
+     · Reduce aleatoriamente ejemplos de la clase mayoritaria.
+  c) Ajuste de class_weight='balanced' en sklearn:
+     · Pondera las clases inversamente proporcional a su frecuencia.
+  d) Umbral de decisión ajustado:
+     · En lugar de 0.5, usar un umbral menor (ej. 0.35) para aumentar
+       la sensibilidad hacia la clase minoritaria.
+
+────────────────────────────────────────────────────────────────────────────────
+SECCIÓN 4 · BOXPLOTS
+────────────────────────────────────────────────────────────────────────────────
+
+4.1 DEFINICIÓN
+──────────────
+Un boxplot (diagrama de caja y bigotes) es una representación gráfica de
+la distribución de una variable mediante 5 estadísticos:
+
+  Estructura visual:
+  ┌───────────────┐
+  ─── Q1 ─── [  caja  ] ─── Q3 ───
+       │         │ mediana │
+       ├── bigote inferior (hasta Q1 − 1.5·IQR)
+       └── bigote superior (hasta Q3 + 1.5·IQR)
+       • puntos fuera = outliers
+
+Componentes:
+  · Línea inferior de la caja: Q1 (percentil 25)
+  · Línea central:             Q2 / Mediana (percentil 50)
+  · Línea superior de la caja: Q3 (percentil 75)
+  · Bigote inferior:           hasta min(Q1 − 1.5·IQR, valor mínimo)
+  · Bigote superior:           hasta max(Q3 + 1.5·IQR, valor máximo)
+  · Puntos aislados:           outliers (valores fuera de los bigotes)
+
+4.2 QUÉ OBSERVAR EN TÉRMINOS DE PATRONES
+──────────────────────────────────────────
+Al comparar boxplots separados por renuncia=0 vs renuncia=1:
+
+  a) Posición de la mediana: Si la mediana de salario es claramente más
+     baja en renuncia=1, confirma que el salario bajo es predictor.
+
+  b) Solapamiento de cajas: Poco solapamiento entre grupos indica que
+     la variable tiene buen poder discriminatorio.
+
+  c) Asimetría (skewness): Caja más larga arriba o abajo indica distribución
+     sesgada; la mediana no coincide con el centro de la caja.
+
+  d) Outliers: Empleados con salarios extremadamente altos que aun así
+     renuncian pueden indicar otros factores determinantes.
+
+  e) Dispersión (ancho de la caja = IQR): Mayor IQR en un grupo indica
+     mayor heterogeneidad interna.
+
+Patrones esperados en el dataset diseñado:
+  · salario_mensual: boxplot de renuncia=1 desplazado hacia valores más bajos.
+  · satisfaccion_laboral: boxplot de renuncia=1 concentrado en 1-2; el de
+    renuncia=0 en 3-5.
+
+────────────────────────────────────────────────────────────────────────────────
+SECCIÓN 5 · ALGORITMOS DE CLASIFICACIÓN SUPERVISADA
+────────────────────────────────────────────────────────────────────────────────
+
+5.1 DEFINICIÓN DE ALGORITMO DE CLASIFICACIÓN SUPERVISADA
+──────────────────────────────────────────────────────────
+Un algoritmo de clasificación supervisada aprende una función f: X → y que
+mapea un vector de features X (entrada) a una clase discreta y (salida),
+usando un conjunto de entrenamiento con etiquetas conocidas.
+
+En este problema:
+  X = {edad, años_en_empresa, salario_mensual, horas_extra_semana,
+       satisfaccion_laboral, num_proyectos_año, distancia_casa_trabajo_km,
+       ultima_evaluacion_desempeño, capacitaciones_recibidas,
+       tiene_ascenso_ultimos_2_años}
+  y = renuncia ∈ {0, 1}
+
+El aprendizaje es "supervisado" porque durante el entrenamiento el modelo
+conoce la etiqueta correcta (renuncia real) para cada registro, y ajusta
+sus parámetros para minimizar el error de predicción.
+
+────────────────────────────────────────────────────────────────────────────────
+
+5.2 REGRESIÓN LOGÍSTICA — MODELO BASE DE REFERENCIA
+─────────────────────────────────────────────────────
+Definición: A pesar de su nombre, es un clasificador. Modela la probabilidad
+de que un ejemplo pertenezca a la clase positiva (renuncia=1) usando la
+función sigmoide aplicada sobre una combinación lineal de las features.
+
+Función sigmoide:
+  P(y=1 | X) = 1 / (1 + e^(−z))
+  donde z = β₀ + β₁x₁ + β₂x₂ + ... + βₙxₙ
+
+Parámetros aprendidos: Los coeficientes βᵢ (uno por feature + intercepto β₀).
+
+Regla de decisión: Si P(y=1 | X) ≥ 0.5 → predice renuncia=1; si no → 0.
+
+Función de coste (log-loss / entropía cruzada binaria):
+  L = −[y·log(ŷ) + (1−y)·log(1−ŷ)]
+
+¿Por qué se llama modelo base?
+  · Es el modelo más simple interpretable.
+  · Sus coeficientes muestran directamente la influencia de cada feature.
+  · Sirve de referencia: si un modelo complejo no supera la regresión
+    logística, puede no valer la complejidad adicional.
+
+Requisito importante:
+  Las features deben estar estandarizadas (StandardScaler) porque la
+  magnitud de los coeficientes βᵢ depende de la escala de cada xᵢ. Si
+  salario_mensual tiene valores en miles y satisfaccion_laboral en 1-5,
+  sin estandarizar sus coeficientes no son comparables.
+
+────────────────────────────────────────────────────────────────────────────────
+
+5.3 RANDOM FOREST — MODELO DE ENSAMBLE
+────────────────────────────────────────
+Definición: Construye múltiples árboles de decisión (N_estimators) sobre
+subconjuntos aleatorios del dataset (bagging) y con subconjuntos aleatorios
+de features en cada nodo de división. La predicción final es la clase
+mayoritaria entre todos los árboles (voting).
+
+Conceptos clave:
+  · Árbol de decisión: Divide el espacio de features mediante reglas
+    "si feature_j < umbral → rama izquierda; si no → rama derecha".
+    En cada hoja se asigna una clase.
+  · Bagging (Bootstrap Aggregating): Cada árbol se entrena sobre una
+    muestra bootstrap (con reemplazo) del conjunto de entrenamiento.
+  · Subconjunto de features: En cada split solo se consideran √p features
+    (p = total de features), reduciendo la correlación entre árboles.
+  · Variance Reduction: Al promediar muchos árboles descorrelacionados
+    se reduce el sobreajuste (overfitting) que tiene un árbol individual.
+
+¿Por qué no necesita estandarización?
+  Los árboles de decisión usan comparaciones de umbral (x > c), operación
+  que es invariante a la escala. Multiplicar una feature por 1000 no cambia
+  el punto de corte relativo, solo el valor absoluto del umbral.
+
+Feature Importance en Random Forest:
+  Mide la reducción promedio de impureza (Gini o entropía) aportada por
+  cada feature a través de todos los árboles. Feature con mayor reducción
+  de impureza = más importante para la predicción.
+
+────────────────────────────────────────────────────────────────────────────────
+
+5.4 GRADIENT BOOSTING (XGBoost / sklearn GBM) — MODELO AVANZADO
+─────────────────────────────────────────────────────────────────
+Definición: Construye árboles secuencialmente, donde cada árbol nuevo
+intenta corregir los errores (residuos) del árbol anterior. Es una técnica
+de boosting, opuesta al bagging de Random Forest.
+
+Mecanismo:
+  1. Entrenar árbol T₁ sobre los datos originales → obtener predicciones ŷ₁.
+  2. Calcular los residuos r₁ = y − ŷ₁ (lo que el modelo erró).
+  3. Entrenar árbol T₂ sobre los residuos r₁.
+  4. Actualizar: ŷ₂ = ŷ₁ + η·T₂(X)  donde η = learning rate.
+  5. Repetir N veces (n_estimators).
+
+Hiperparámetros críticos:
+  · n_estimators: número de árboles (más árboles = más ajuste, riesgo overfitting)
+  · learning_rate (η): cuánto corrige cada árbol (valores típicos: 0.01-0.3)
+  · max_depth: profundidad máxima de cada árbol (típico: 3-6)
+  · subsample: fracción de datos usada en cada árbol (regularización)
+
+Diferencia clave con Random Forest:
+  · Random Forest: árboles en paralelo, independientes entre sí.
+  · Gradient Boosting: árboles en serie, cada uno aprende del error del anterior.
+  · Gradient Boosting suele tener mejor accuracy pero es más lento y
+    más propenso a overfitting si no se regularizan bien los hiperparámetros.
+
+────────────────────────────────────────────────────────────────────────────────
+SECCIÓN 6 · RANDOM_STATE
+────────────────────────────────────────────────────────────────────────────────
+
+Definición: random_state es un parámetro que fija la semilla del generador
+de números pseudoaleatorios. Al fijar una semilla, las operaciones
+"aleatorias" se vuelven deterministas y reproducibles.
+
+Implicaciones en ENTRENAMIENTO:
+  · En train_test_split: determina qué registros van al conjunto de
+    entrenamiento y cuáles al de prueba. Con random_state=42, el split
+    siempre será idéntico.
+  · En Random Forest: determina qué subconjunto de features se considera
+    en cada nodo y qué muestra bootstrap se usa para cada árbol.
+  · En Gradient Boosting: determina el subsample aleatorio por árbol.
+
+Implicaciones en PRUEBA / COMPARACIÓN:
+  · Usar el mismo random_state=42 en todos los modelos garantiza que todos
+    se prueban sobre exactamente el mismo conjunto de test. Sin esto, las
+    diferencias en métricas podrían deberse al split, no al algoritmo.
+  · Es una buena práctica de reproducibilidad científica: otro investigador
+    con el mismo código obtendrá los mismos resultados.
+
+Nota: random_state=42 es una convención de la comunidad (referencia al
+libro "The Hitchhiker's Guide to the Galaxy"), pero cualquier entero fijo
+cumple la misma función.
+
+────────────────────────────────────────────────────────────────────────────────
+SECCIÓN 7 · MÉTRICAS DE EVALUACIÓN
+────────────────────────────────────────────────────────────────────────────────
+
+Conceptos previos — Matriz de confusión:
+  TP (True Positive):  modelo predice renuncia=1, realidad es renuncia=1
+  TN (True Negative):  modelo predice renuncia=0, realidad es renuncia=0
+  FP (False Positive): modelo predice renuncia=1, realidad es renuncia=0  ← Error Tipo I
+  FN (False Negative): modelo predice renuncia=0, realidad es renuncia=1  ← Error Tipo II
+
+────────────────────────────────────────────────────────────────────────────────
+
+7.1 ACCURACY (Exactitud)
+─────────────────────────
+Sobre qué se calcula: Sobre el total de predicciones (train+test o solo test).
+
+Fórmula:
+  Accuracy = (TP + TN) / (TP + TN + FP + FN)
+
+Qué muestra: Proporción de predicciones correctas del total.
+
+Característica: Métrica intuitiva pero engañosa en datasets desbalanceados.
+Si el 80% son renuncia=0, un modelo que siempre predice "0" tiene 80%
+de accuracy sin haber aprendido nada útil.
+
+────────────────────────────────────────────────────────────────────────────────
+
+7.2 PRECISIÓN (Precision)
+──────────────────────────
+Sobre qué se calcula: Sobre todas las predicciones positivas del modelo.
+
+Fórmula:
+  Precision = TP / (TP + FP)
+
+Qué muestra: De todos los empleados que el modelo predijo que iban a
+renunciar, ¿qué fracción realmente renunció?
+
+Característica: Penaliza los falsos positivos. Alta precisión = pocas
+alarmas falsas. Relevante cuando el costo de intervenir innecesariamente
+es alto (ej. dar bonos a quien no iba a renunciar = gasto innecesario).
+
+────────────────────────────────────────────────────────────────────────────────
+
+7.3 RECALL (Sensibilidad / Exhaustividad)
+──────────────────────────────────────────
+Sobre qué se calcula: Sobre todos los casos positivos reales.
+
+Fórmula:
+  Recall = TP / (TP + FN)
+
+Qué muestra: De todos los empleados que realmente iban a renunciar,
+¿qué fracción detectó el modelo?
+
+Característica: Penaliza los falsos negativos. Alto recall = pocas
+renuncias no detectadas. Relevante cuando el costo de no detectar una
+renuncia es alto (perder talento crítico, costo de reemplazo elevado).
+
+NOTA: Existe un trade-off entre Precision y Recall: aumentar uno
+generalmente disminuye el otro. El umbral de clasificación controla
+este balance.
+
+────────────────────────────────────────────────────────────────────────────────
+
+7.4 F1-SCORE
+─────────────
+Sobre qué se calcula: Combina Precision y Recall en una sola métrica.
+
+Fórmula (media armónica de Precision y Recall):
+  F1 = 2 · (Precision × Recall) / (Precision + Recall)
+
+Qué muestra: Balance entre Precision y Recall. Un F1 alto requiere que
+ambas métricas sean altas simultáneamente.
+
+Característica: Métrica robusta para datasets desbalanceados. Si un
+modelo tiene Precision=1.0 pero Recall=0.01 (solo detecta 1% de renuncias),
+el F1 penaliza fuertemente: F1 = 2·(1.0·0.01)/(1.01) ≈ 0.02.
+
+────────────────────────────────────────────────────────────────────────────────
+
+7.5 AUC-ROC (Área Bajo la Curva ROC)
+──────────────────────────────────────
+Sobre qué se calcula: Sobre el conjunto de prueba, usando las probabilidades
+predichas (no las etiquetas binarias).
+
+Qué muestra: La capacidad del modelo para discriminar entre clases. Mide
+la probabilidad de que, dado un empleado que renuncia y uno que no,
+el modelo asigne una probabilidad de renuncia mayor al primero.
+
+Fórmula (interpretación estadística):
+  AUC = P(score(renunciar) > score(no renunciar))
+
+Escala:
+  AUC = 0.5 → modelo sin información (aleatorio)
+  AUC = 0.7-0.8 → modelo aceptable
+  AUC = 0.8-0.9 → modelo bueno
+  AUC = 0.9-1.0 → modelo excelente (puede indicar overfitting)
+  AUC = 1.0 → modelo perfecto (sospechoso en datos reales)
+
+Característica: No depende del umbral de clasificación. Es útil para
+comparar modelos independientemente del punto de corte elegido, y es
+robusto frente al desbalance de clases.
+
+────────────────────────────────────────────────────────────────────────────────
+SECCIÓN 8 · CURVA ROC
+────────────────────────────────────────────────────────────────────────────────
+
+Definición: La curva ROC (Receiver Operating Characteristic) grafica, para
+cada posible umbral de decisión τ ∈ [0,1]:
+  · Eje Y: TPR (True Positive Rate = Recall) = TP / (TP + FN)
+  · Eje X: FPR (False Positive Rate)         = FP / (FP + TN)
+
+Proceso de construcción:
+  1. El modelo produce probabilidades P(renuncia=1) para cada empleado.
+  2. Se prueba con umbrales desde 0 hasta 1 (ej. 0.0, 0.01, 0.02... 1.0).
+  3. Para cada umbral se calculan TPR y FPR, generando un punto en el gráfico.
+  4. Se unen todos los puntos → curva ROC.
+
+Interpretación gráfica:
+  · Diagonal (de (0,0) a (1,1)): rendimiento aleatorio (AUC=0.5).
+  · Curva hacia la esquina superior izquierda: mejor discriminación.
+  · El área bajo la curva (AUC) resume el rendimiento global.
+
+Comparación de modelos:
+  Al graficar las 3 curvas (Regresión Logística, Random Forest, Gradient
+  Boosting) en un mismo gráfico, el modelo con curva más elevada y alejada
+  de la diagonal tiene mejor capacidad discriminatoria.
+
+────────────────────────────────────────────────────────────────────────────────
+SECCIÓN 9 · MATRIZ DE CONFUSIÓN
+────────────────────────────────────────────────────────────────────────────────
+
+Definición: Tabla que muestra el rendimiento de un clasificador comparando
+las etiquetas reales contra las predichas.
+
+Estructura para clasificación binaria:
+
+                  PREDICHO: 0      PREDICHO: 1
+  REAL: 0     |   TN (correct)  |  FP (error)   |
+  REAL: 1     |   FN (error)    |  TP (correct)  |
+
+Significado de cada cuadrante en el contexto del problema:
+  · TN: Empleado que no iba a renunciar, y el modelo predijo correctamente
+        que se quedaría. Sin acción necesaria → correcto.
+  · TP: Empleado que iba a renunciar, y el modelo lo detectó.
+        Permite intervención preventiva → el objetivo del sistema.
+  · FP: Empleado que no iba a renunciar, pero el modelo lo marcó como
+        "riesgo de renuncia". Error Tipo I → recursos desperdiciados
+        en retención innecesaria.
+  · FN: Empleado que SÍ renunció, pero el modelo no lo detectó. Error
+        Tipo II → pérdida no anticipada, costo de reemplazo no planificado.
+        En RRHH este es el error más costoso.
+
+Visualización: Se representa como mapa de calor donde los valores altos
+en la diagonal principal (TN, TP) indican buen rendimiento.
+
+────────────────────────────────────────────────────────────────────────────────
+SECCIÓN 10 · FEATURE IMPORTANCE
+────────────────────────────────────────────────────────────────────────────────
+
+Definición: Medida que cuantifica cuánto contribuye cada variable (feature)
+al poder predictivo del modelo. Permite entender qué factores son más
+determinantes en la predicción de renuncia.
+
+En Random Forest:
+  Se calcula como la reducción promedio de impureza (Gini Importance)
+  que aporta una feature a través de todos los árboles y todos los nodos
+  donde esa feature se usó como criterio de división.
+
+  Fórmula (Gini Importance para feature j):
+    Importance(j) = Σ_árboles Σ_nodos [p(nodo) · ΔGini(nodo, j)] / N_árboles
+
+  donde:
+    · p(nodo) = fracción de muestras que pasan por ese nodo
+    · ΔGini   = reducción de impureza lograda al dividir por la feature j
+
+En Gradient Boosting (XGBoost):
+  Similar, pero acumulado a través de los árboles secuenciales. También
+  puede medirse como "gain" (ganancia promedio al usar esa feature) o
+  como "cover" (número de muestras afectadas).
+
+Interpretación:
+  · Los valores se normalizan para que sumen 1.0 (100%).
+  · Una feature con importance = 0.35 explica el 35% del poder predictivo.
+  · Features con importance cercana a 0 pueden eliminarse sin perder
+    rendimiento (reducción de dimensionalidad).
+
+Uso en el proyecto: Permite responder "¿qué factores realmente predicen
+la renuncia?" y comparar si coincide con las reglas de coherencia diseñadas.
+
+────────────────────────────────────────────────────────────────────────────────
+SECCIÓN 11 · K-FOLD CROSS-VALIDATION
+────────────────────────────────────────────────────────────────────────────────
+
+Definición: Técnica de evaluación que divide el dataset de entrenamiento
+en k subconjuntos (folds) iguales. El modelo se entrena k veces: en cada
+iteración usa k−1 folds para entrenar y 1 fold para validar.
+
+Proceso con k=5:
+  Fold 1: [VAL | TR | TR | TR | TR]  → métrica_1
+  Fold 2: [TR | VAL | TR | TR | TR]  → métrica_2
+  Fold 3: [TR | TR | VAL | TR | TR]  → métrica_3
+  Fold 4: [TR | TR | TR | VAL | TR]  → métrica_4
+  Fold 5: [TR | TR | TR | TR | VAL]  → métrica_5
+
+  Métrica final = media(métrica_1, ..., métrica_5) ± std
+
+Ventajas:
+  · Todos los datos se usan para entrenamiento y para validación (en
+    diferentes iteraciones), maximizando el uso del dataset.
+  · La media del F1 es una estimación más robusta del rendimiento real
+    que una sola partición.
+  · La desviación estándar mide la estabilidad del modelo: std alta
+    indica que el rendimiento varía mucho según qué datos se usan.
+
+Diferencia con train/test split:
+  El split 80/20 con random_state=42 da una sola estimación de rendimiento.
+  El cross-validation da k estimaciones y su variabilidad, siendo más
+  confiable estadísticamente.
+
+────────────────────────────────────────────────────────────────────────────────
+SECCIÓN 12 · GRIDSEARCHCV Y RANDOMIZEDSEARCHCV
+────────────────────────────────────────────────────────────────────────────────
+
+12.1 GRIDSEARCHCV
+──────────────────
+Definición: Búsqueda exhaustiva de la combinación óptima de hiperparámetros.
+Prueba TODAS las combinaciones posibles de los valores especificados.
+
+Proceso:
+  1. Definir un grid de hiperparámetros:
+     param_grid = {
+       'n_estimators': [100, 200, 300],
+       'max_depth': [3, 5, 7],
+       'learning_rate': [0.01, 0.1, 0.2]
+     }
+  2. Por cada combinación (3 × 3 × 3 = 27 combinaciones), aplicar
+     k-fold cross-validation.
+  3. Seleccionar la combinación con mejor métrica promedio (ej. F1).
+
+Ventaja: Garantiza encontrar el óptimo dentro del grid definido.
+Desventaja: Computacionalmente caro. Con 27 combinaciones y k=5, se
+entrena el modelo 27 × 5 = 135 veces.
+
+12.2 RANDOMIZEDSEARCHCV
+────────────────────────
+Definición: Búsqueda aleatoria sobre el espacio de hiperparámetros.
+En lugar de probar todas las combinaciones, muestrea n_iter combinaciones
+de forma aleatoria.
+
+Ventaja: Más eficiente cuando el espacio de búsqueda es grande. Estudios
+empíricos muestran que RandomizedSearch encuentra soluciones comparables
+a GridSearch con 60-70% menos iteraciones.
+
+Desventaja: No garantiza encontrar el óptimo global; puede perderse la
+mejor combinación si no la muestrea.
+
+Cuándo usar cada uno:
+  · GridSearchCV: pocos hiperparámetros, espacio pequeño y bien conocido.
+  · RandomizedSearchCV: muchos hiperparámetros o rangos continuos amplios.
+
+────────────────────────────────────────────────────────────────────────────────
+SECCIÓN 13 · DISTRIBUCIÓN DE CLASES X% / Y%
+────────────────────────────────────────────────────────────────────────────────
+
+Definición e interpretación:
+  La distribución de clases X% / Y% describe la proporción entre las
+  dos categorías de la variable objetivo.
+
+  Ejemplo: "El dataset tiene una distribución de clases 72% / 28%"
+  significa que el 72% de los empleados tiene renuncia=0 y el 28% tiene
+  renuncia=1.
+
+Implicaciones prácticas:
+  · Un modelo "ingenuo" que siempre predice la clase mayoritaria (72%)
+    obtendrá 72% de accuracy sin haber aprendido ningún patrón.
+  · Esto hace que el Accuracy sea una métrica engañosa.
+  · El F1-Score, Precision, Recall y AUC-ROC son métricas más informativas
+    en presencia de desbalance.
+
+Cómo documentarlo:
+  Calcular: df['renuncia'].value_counts(normalize=True) × 100
+  Reportar los porcentajes en el informe y justificar las decisiones
+  tomadas (balanceo con SMOTE, class_weight, ajuste de umbral, etc.)
+
+────────────────────────────────────────────────────────────────────────────────
+SECCIÓN 14 · REGLAS DE COHERENCIA — BASE LÓGICA
+────────────────────────────────────────────────────────────────────────────────
+
+14.1 FUNDAMENTO GENERAL
+────────────────────────
+Las reglas de coherencia simulan las dinámicas reales del mercado laboral
+ecuatoriano. La variable objetivo "renuncia" no se asigna aleatoriamente
+sino como resultado de una función de probabilidad que aumenta cuando
+concurren factores de riesgo documentados en literatura de RRHH y
+comportamiento organizacional.
+
+Lógica de implementación sugerida:
+  - Inicializar prob_renuncia = 0.10 (tasa base de rotación)
+  - Sumar incrementos según cada factor de riesgo presente
+  - Convertir a binario: renuncia = 1 si random() < prob_renuncia
+
+14.2 DESGLOSE DE CADA REGLA — FUNDAMENTO
+──────────────────────────────────────────
+
+REGLA 1: satisfaccion_laboral BAJA + edad BAJA → mayor probabilidad de renuncia
+  Base lógica: Trabajadores jóvenes con baja satisfacción tienen menor
+  costo de cambio de empleo (menos compromisos financieros, mayor movilidad,
+  menor aversión al riesgo de buscar empleo). La satisfacción laboral es
+  el predictor individual más consistente de intención de renuncia en la
+  literatura de comportamiento organizacional (Locke, 1976; Judge et al., 2001).
+  Umbral sugerido: satisfaccion_laboral ≤ 2 AND edad ≤ 35 → +0.30 a prob_renuncia
+
+REGLA 2: años_en_empresa < 10 → mayor probabilidad de renuncia
+  Base lógica: Empleados con menor antigüedad tienen menor capital
+  organizacional acumulado (redes, conocimiento implícito, beneficios
+  por antigüedad) y menor costo psicológico de salida. La curva de
+  retención típica muestra mayor rotación en los primeros 5 años.
+  Umbral: años_en_empresa < 10 → +0.15 a prob_renuncia
+
+REGLA 3: salario_mensual ≤ SBU + 30% del SBU → mayor probabilidad de renuncia
+  Base lógica: El Salario Básico Unificado de Ecuador para 2026 es de
+  $470 USD mensuales. SBU + 30% = $470 × 1.3 = $611. Empleados con
+  salarios menores o iguales a este umbral tienen alta sensibilidad salarial
+  y pueden ser atraídos por ofertas competitivas del mercado. La teoría de
+  equidad de Adams postula que la percepción de inequidad salarial es causa
+  directa de desmotivación y rotación.
+  Umbral: salario ≤ 611 → +0.25 a prob_renuncia
+
+REGLA 4: horas_extra_semana ≥ 10 → mayor probabilidad de renuncia
+  Base lógica: La sobrecarga laboral sostenida genera burnout (síndrome
+  de agotamiento profesional, OMS ICD-11). Más de 10 horas extra por semana
+  equivale a un incremento del 25%+ sobre una jornada estándar de 40 horas,
+  nivel en que la literatura documenta deterioro de bienestar y salud mental.
+  El desequilibrio trabajo-vida personal es factor de riesgo de renuncia,
+  especialmente en generaciones Millennial y Z.
+  Umbral: horas_extra ≥ 10 → +0.20 a prob_renuncia
+
+REGLA 5: num_proyectos_año ≤ 2 → mayor probabilidad de renuncia
+  Base lógica: Baja carga de proyectos puede indicar subutilización o
+  estancamiento profesional. El modelo de características del trabajo
+  de Hackman y Oldham establece que la variedad de tareas, identidad
+  y significado del trabajo son determinantes de motivación intrínseca.
+  Pocos proyectos también reducen el aprendizaje y el desarrollo de carrera.
+  Umbral: num_proyectos ≤ 2 → +0.10 a prob_renuncia
+
+REGLA 6: distancia_casa_trabajo_km ≤ 30 → efecto MODERADOR (reduce renuncia)
+  Nota de revisión: Esta regla requiere ajuste lógico. En la mayoría de
+  estudios, MAYOR distancia aumenta la probabilidad de renuncia (costo
+  de tiempo, transporte, desgaste). Se sugiere invertir la regla:
+    · distancia > 50 km → +0.15 (factor de riesgo)
+    · distancia ≤ 30 km → sin incremento (factor neutro o protector)
+  Fundamento original (si se mantiene ≤ 30 como factor de riesgo): puede
+  interpretarse como empleados que viven cerca pero tienen barreras de
+  movilidad específicas de la ciudad (tráfico, transporte público deficiente).
+  Recomendación: Documentar explícitamente la interpretación elegida en
+  el informe para justificar la lógica ante el evaluador.
+
+REGLA 7: ultima_evaluacion_desempeño ≤ 0.6 → mayor probabilidad de renuncia
+  Base lógica: Evaluaciones bajas se correlacionan con menor probabilidad
+  de ascenso y reconocimiento. Pueden generar frustración (si el empleado
+  considera la evaluación injusta) o desenganche activo. La teoría de
+  las expectativas de Vroom postula que si el empleado percibe que su
+  esfuerzo no se traduce en recompensas, reduce su motivación.
+  Umbral: evaluacion ≤ 0.6 → +0.15 a prob_renuncia
+
+REGLA 8: capacitaciones_recibidas ≤ 2 → mayor probabilidad de renuncia
+  Base lógica: La inversión en capacitación aumenta el capital humano
+  y la percepción de valoración por parte de la empresa. Empleados con
+  pocas capacitaciones perciben menor desarrollo de carrera, lo que
+  incrementa la intención de búsqueda de empleo en organizaciones que
+  sí inviertan en su formación. Referencia: Teoría del capital humano (Becker).
+  Umbral: capacitaciones ≤ 2 → +0.15 a prob_renuncia
+
+REGLA 9: tiene_ascenso_ultimos_2_años = 0 → mayor probabilidad de renuncia
+  Base lógica: La ausencia de movilidad vertical en un período de 2 años
+  señala al empleado que su crecimiento en la organización es limitado.
+  Para perfiles jóvenes o de alto desempeño, el estancamiento es un
+  factor crítico de salida. La percepción de "techo de cristal" o falta
+  de reconocimiento es consistentemente uno de los top-3 motivos de
+  renuncia en encuestas de exit interview.
+  Umbral: ascenso = 0 → +0.15 a prob_renuncia
+
+14.3 EJEMPLO DE IMPLEMENTACIÓN LÓGICA (pseudocódigo)
+──────────────────────────────────────────────────────
+  Para cada empleado generado:
+    prob_renuncia = 0.10  ← tasa base
+
+    SI satisfaccion_laboral ≤ 2 Y edad ≤ 35:
+        prob_renuncia += 0.30
+    SINO SI satisfaccion_laboral ≤ 2:
+        prob_renuncia += 0.15
+
+    SI años_en_empresa < 10:
+        prob_renuncia += 0.15
+
+    SI salario_mensual ≤ 611:
+        prob_renuncia += 0.25
+
+    SI horas_extra_semana ≥ 10:
+        prob_renuncia += 0.20
+
+    SI num_proyectos_año ≤ 2:
+        prob_renuncia += 0.10
+
+    SI distancia_casa_trabajo_km > 50:
+        prob_renuncia += 0.15
+
+    SI ultima_evaluacion_desempeño ≤ 0.6:
+        prob_renuncia += 0.15
+
+    SI capacitaciones_recibidas ≤ 2:
+        prob_renuncia += 0.15
+
+    SI tiene_ascenso_ultimos_2_años == 0:
+        prob_renuncia += 0.15
+
+    prob_renuncia = min(prob_renuncia, 0.95)  ← límite máximo
+    renuncia = 1 si random_uniform(0,1) < prob_renuncia; sino 0
+
+14.4 OBJETIVO DE DISTRIBUCIÓN RESULTANTE
+──────────────────────────────────────────
+Con la lógica anterior, se espera obtener un dataset con aproximadamente:
+  · 65-75% renuncia=0 (se quedan)
+  · 25-35% renuncia=1 (renuncian)
+Lo cual refleja una tasa de rotación alta pero verosímil para una empresa
+con problemas de clima organizacional en Ecuador. Esto crea un dataset
+ligeramente desbalanceado, lo que requiere documentar la estrategia de
+manejo del desbalance en el informe.
+
+================================================================================
+  FIN DEL DOCUMENTO — BASE TEÓRICA Y TÉCNICA
+  Preparado como material de apoyo para la Tarea de Aprendizaje Supervisado
+================================================================================

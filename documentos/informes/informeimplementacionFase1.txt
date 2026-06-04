@@ -1,0 +1,80 @@
+================================================================================
+   INFORME DE IMPLEMENTACIÓN Y VALIDACIÓN - FASE 1
+   Proyecto: Sistema Predictivo de Rotación de Personal (RRHH)
+   Ingeniería de Software · 7mo Semestre
+================================================================================
+
+Este informe detalla las actividades, la lógica de negocio y las validaciones
+relacionadas con la Fase 1 del Plan de Implementación de Aprendizaje Supervisado.
+
+--------------------------------------------------------------------------------
+1. CONFIGURACIÓN DEL ENTORNO DE DESARROLLO
+--------------------------------------------------------------------------------
+De acuerdo con las pautas del proyecto, se estableció un entorno limpio y aislado:
+  - Creación del entorno virtual (venv) en la raíz del proyecto.
+  - Instalación de dependencias clave: numpy, pandas, matplotlib, seaborn, 
+    scikit-learn, xgboost y jupyter.
+  - Creación del notebook de desarrollo 'Supervised_Learning_HR.ipynb'.
+
+--------------------------------------------------------------------------------
+2. ESPECIFICACIÓN DE VARIABLES Y RANGOS (Subproceso 1.1)
+--------------------------------------------------------------------------------
+Se generó un dataset de 500 registros con las siguientes variables y tipos:
+  - edad: Entero (22 a 60 años)
+  - años_en_empresa: Entero (0 a 20 años, y siempre <= edad - 18)
+  - cargo: Categoría (Asistente, Analista, Especialista, Coordinador, Gerente)
+  - salario_mensual: Entero (coherente con el cargo, partiendo del SBU de Ecuador)
+  - horas_extra_semana: Entero (0 a 20 horas)
+  - satisfaccion_laboral: Entero discreto (escala 1 a 5)
+  - num_proyectos_año: Entero (1 a 10 proyectos)
+  - distancia_casa_trabajo_km: Entero (1 a 80 km)
+  - ultima_evaluacion_desempeño: Flotante (0.0 a 1.0)
+  - capacitaciones_recibidas: Entero (0 a 5 capacitaciones)
+  - tiene_ascenso_ultimos_2_años: Binario (0 o 1, y 0 si años_en_empresa < 2)
+  - renuncia: Variable objetivo binaria (0 = Se queda, 1 = Renuncia en 6 meses)
+
+--------------------------------------------------------------------------------
+3. LÓGICA DE NEGOCIO Y REGLAS DE COHERENCIA (Subproceso 1.2)
+--------------------------------------------------------------------------------
+Para simular un escenario corporativo realista en Ecuador (2026), la probabilidad 
+individual de renuncia se modeló según los siguientes factores de riesgo:
+
+  - Umbral crítico de salario: SBU Ecuador 2026 ($470 USD). Si el salario mensual
+    es menor o igual a SBU + 30% ($611 USD), la probabilidad se incrementa en +0.20.
+  - Regla de burnout: Horas extra a la semana >= 10 incrementa la probabilidad
+    en +0.20.
+  - Efecto generacional e insatisfacción: Empleados jóvenes (edad <= 35) con baja
+    satisfacción laboral (satisfaccion_laboral <= 2) tienen el mayor incremento: +0.30.
+  - Distancia al trabajo: Distancia > 50 km se define como factor de riesgo (+0.15),
+    reflejando el impacto del tiempo de traslado en el desgaste físico y mental.
+  - Estancamiento profesional: Sin ascenso (+0.05), pocas capacitaciones (+0.05)
+    y pocos proyectos (+0.05).
+  - Baja evaluación de desempeño: Evaluaciones <= 0.6 suman +0.10 a la probabilidad.
+
+--------------------------------------------------------------------------------
+4. GENERACIÓN ESTOCÁSTICA Y CALIBRACIÓN (Subproceso 1.3 y 1.4)
+--------------------------------------------------------------------------------
+Para simular el desbalance de clases de manera realista pero manejable, se calibró
+el generador estocástico utilizando búsquedas de semillas. La semilla '2' produjo
+una proporción de clase positiva (renuncia=1) del 34.60%, cumpliendo estrictamente
+con el intervalo de validación establecido (25% - 35%).
+
+El dataset fue exportado a: datos/dataset_empleados.csv
+
+--------------------------------------------------------------------------------
+5. VALIDACIONES CRÍTICAS DE LA FASE 1
+--------------------------------------------------------------------------------
+Todas las validaciones y aserciones se ejecutaron y aprobaron con éxito:
+  [OK] Cantidad de registros: 500 (Cumple requisito de >= 300)
+  [OK] Valores nulos: 0 detectados
+  [OK] Rangos de variables y coherencias internas:
+       - Rango de edad (22-60): Correcto
+       - Años en empresa coherente con la edad (<= edad - 18): Correcto
+       - Horas extra, satisfacción, proyectos, distancia y evaluación: Correcto
+       - Coherencia temporal de ascensos (0 si años en empresa < 2): Correcto
+  [OK] Proporción de la clase positiva (renuncia): 34.60% (Entre 25% y 35%)
+  [OK] Formato del archivo CSV y consistencia de datos: Correcto
+
+================================================================================
+   FIN DEL INFORME DE LA FASE 1
+================================================================================

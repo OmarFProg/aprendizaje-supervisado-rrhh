@@ -1,0 +1,61 @@
+FUENTE DE DATASET PARA DATOS: 
+edad: número entero entre 22 y 60
+
+años_en_empresa: entre 0 y 20, coherente con la edad
+
+salario_mensual: en dólares, coherente con el puesto
+
+horas_extra_semana: entre 0 y 20
+
+satisfaccion_laboral: escala 1-5 (1=muy insatisfecho, 5=muy satisfecho)
+
+num_proyectos_año: entre 1 y 10
+
+distancia_casa_trabajo_km: entre 1 y 80
+
+ultima_evaluacion_desempeño: score entre 0.0 y 1.0
+
+capacitaciones_recibidas: entre 0 y 5 por año
+
+tiene_ascenso_ultimos_2_años: 0 o 1
+
+//definiciones tecnicas, formula para calcular y variables implicitas para:
+media, std, min, max, percentiles
+definicion de:  heatmap de correlación entre todas las variables numéricas
+reglas para Identifica las 3 correlaciones más fuertes con la variable objetivo
+implicaciones de un dataset blanceado, y un dataset desbalanceado
+//definicion de boxplots, que observar en terminos de patrones
+//definicion de algoritmo de clasificacion supervisada
+//defincion de Regresión Logística — modelo base de referencia, Random Forest — modelo de ensamble, Gradient Boosting (XGBoost o sklearn) — modelo avanzado
+//definicion de random_state, implicaciones de su valor en entrenamiento y en prueba
+//en terminos de la actividad, definir: Accuracy, Precisión, Recall, F1-Score y AUC-ROC;(sobre que se calcula, que muestra, caracteristica).
+//definir curva ROC
+ matriz de confusión
+feature importance.
+k-fold cross-validation
+desviación estándar
+GridSearchCV 
+RandomizedSearchCV
+//explicar: dataset tiene una distribución de clases X% / Y%.
+
+
+GENERACION DE REGLAS DE COHERENCIA(sugerir mejoras logico/coherentes, refinar)
+lo que aumenta la probabilidad de renuncia:
+satisfaccion_laboral baja + edad baja,
+años_en_empresa menor < 10,
+salario_mensual <= SBU + 0,3*SBU; (Salario Basico Unificado Ecuador 2026),
+horas_extra_semana:=>10,
+num_proyectos_año: <=2,
+distancia_casa_trabajo_km:<=30,
+ultima_evaluacion_desempeño: <=0.6,
+capacitaciones_recibidas: <=2,
+tiene_ascenso_ultimos_2_años = 0;
+
+
+
+
+
+
+ 
+
+

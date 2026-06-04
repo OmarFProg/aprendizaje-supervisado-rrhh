@@ -1,0 +1,55 @@
+================================================================================
+   INFORME DE IMPLEMENTACIÓN Y VALIDACIÓN - FASE 3
+   Proyecto: Sistema Predictivo de Rotación de Personal (RRHH)
+   Ingeniería de Software · 7mo Semestre
+================================================================================
+
+Este informe detalla las actividades, resultados y validaciones de la Fase 3 
+(Ingeniería de Características y Preprocesamiento) del plan de trabajo.
+
+--------------------------------------------------------------------------------
+1. PARTICIÓN DEL DATASET (Subproceso 3.1)
+--------------------------------------------------------------------------------
+Se aislaron las 10 características obligatorias definidas en las rúbricas y en
+el diseño de la Fase 1.1:
+  - edad, años_en_empresa, salario_mensual, horas_extra_semana,
+    satisfaccion_laboral, num_proyectos_año, distancia_casa_trabajo_km,
+    ultima_evaluacion_desempeño, capacitaciones_recibidas,
+    tiene_ascenso_ultimos_2_años.
+
+Se realizó la partición del dataset con una proporción de 80% para entrenamiento
+y 20% para prueba, utilizando la semilla 'random_state=42' para asegurar la
+reproducibilidad matemática del muestreo:
+  - Tamaño de X_train (Entrenamiento): 400 registros
+  - Tamaño de X_test (Prueba): 100 registros
+  - Tamaño de y_train (Entrenamiento): 400 registros
+  - Tamaño de y_test (Prueba): 100 registros
+
+--------------------------------------------------------------------------------
+2. ESTANDARIZACIÓN DE VARIABLES (Subproceso 3.2)
+--------------------------------------------------------------------------------
+Para garantizar que los modelos basados en distancias y pesos (como la Regresión
+Logística) operen bajo las condiciones matemáticas óptimas, se aplicó la 
+estandarización StandardScaler:
+  - Instanciación y Ajuste (fit): Se calculó la media (mu) y la desviación
+    estándar (sigma) únicamente utilizando las 400 observaciones del conjunto de
+    entrenamiento X_train.
+  - Transformación (transform): Se aplicó la transformación (escalado) sobre
+    los conjuntos X_train y X_test, preservando la media y la desviación de train.
+  - Esto previene de forma absoluta la fuga de información (Data Leakage) desde
+    el conjunto de prueba hacia el entrenamiento.
+
+--------------------------------------------------------------------------------
+3. VALIDACIONES CRÍTICAS DE LA FASE 3
+--------------------------------------------------------------------------------
+Todas las validaciones y aserciones de consistencia se ejecutaron y aprobaron:
+  [OK] Dimensiones de conjuntos: Se verificó que X_train e y_train tengan
+       exactamente 400 registros (80%) y X_test e y_test tengan 100 (20%).
+  [OK] Verificación de Data Leakage: Se confirmó matemáticamente que la media del
+       escalador coincide con precisión numérica con la media real de X_train y 
+       difiere significativamente de la media de X_test (diferencia > 0.01),
+       demostrando que el escalador no tuvo contacto alguno con los datos de test.
+
+================================================================================
+   FIN DEL INFORME DE LA FASE 3
+================================================================================
