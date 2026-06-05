@@ -1,22 +1,21 @@
-# Entorno virtual
+# Entornos virtuales locales
 venv/
 .venv/
+env/
 
-# Python
-__pycache__/
-*.pyc
-
-# VS Code
-.vscode/
-
-# Jupyter
-.ipynb_checkpoints/
-
-# LaTeX
-*.aux
+# Archivos basura de compilación de LaTeX
 *.log
-*.out
+*.aux
 *.toc
 *.synctex.gz
 *.fls
 *.fdb_latexmk
+
+# Archivos del sistema y cachés
+__pycache__/
+*.pyc
+.DS_Store
+.vscode/
+
+# Descomenta las siguientes líneas si tus gráficas se autogeneran al ejecutar el .ipynb
+recursos/*.png

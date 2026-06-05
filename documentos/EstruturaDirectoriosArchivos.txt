@@ -1,0 +1,34 @@
+Estructura de Directorios y Archivos - Proyecto Aprendizaje Supervisado RRHH
+===========================================================================
+
+1AprendizajeSupervisado/
+├── .gitignore                          # Archivo para ignorar archivos en Git (ej. venv/)
+├── requirements.txt                   # Lista de dependencias de Python requeridas para el proyecto
+├── Supervised_Learning_HR.ipynb       # Notebook principal con el flujo de Aprendizaje Supervisado
+├── datos/                             # Directorio para almacenar los conjuntos de datos
+│   └── dataset_empleados.csv          # Dataset con la información de los empleados
+├── documentos/                        # Documentación teórica, metodológica e informes del proyecto
+│   ├── Aprendizage_Supervisado.pdf    # PDF sobre conceptos de aprendizaje supervisado
+│   ├── Baseteorica_AprendizajeSupervisado.txt # Fundamento teórico detallado
+│   ├── EstruturaDirectoriosArchivos.txt # Este archivo con la estructura de carpetas
+│   ├── NocionesPrevias.txt            # Conceptos y nociones previas necesarias
+│   ├── PlanImplementacionAprendizageSupervisado.txt # Plan de implementación por fases
+│   ├── Tarea_1_Aprendizaje_Supervisado.pdf # PDF de la tarea/proyecto
+│   ├── Tarea_Aprendizaje_Supervisado.txt # Descripción textual de las pautas del trabajo
+│   ├── informe.log                    # Archivo de registro de compilación de LaTeX
+│   ├── informe.tex                    # Código fuente en LaTeX del informe del proyecto
+│   ├── informe.txt                    # Copia textual o borrador del informe final
+│   └── informes/                      # Informes detallados de cada fase de implementación
+│       ├── informeimplementacionFase1.txt # Informe de la Fase 1: Análisis Exploratorio de Datos (EDA)
+│       ├── informeimplementacionFase2.txt # Informe de la Fase 2: Preprocesamiento de Datos
+│       ├── informeimplementacionFase3.txt # Informe de la Fase 3: Selección y Entrenamiento del Modelo
+│       ├── informeimplementacionFase4.txt # Informe de la Fase 4: Evaluación y Selección del Modelo
+│       └── informeimplementacionFase5.txt # Informe de la Fase 5: Interpretación y Conclusiones
+├── recursos/                          # Recursos visuales y gráficos generados
+│   ├── boxplots_analisis.png          # Boxplots para análisis de variables continuas
+│   ├── curvas_roc.png                 # Curvas ROC de los modelos evaluados
+│   ├── distribucion_clases.png        # Gráfico de distribución de la variable objetivo
+│   ├── heatmap_correlacion.png        # Mapa de calor de correlación entre variables
+│   ├── importancia_features.png      # Importancia de las variables (Feature Importance)
+│   └── matrices_confusion.png         # Matrices de confusión para comparar modelos
+└── venv/                              # Entorno virtual de Python (omitido el desglose interno)
